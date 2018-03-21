@@ -62,7 +62,7 @@ public class Context extends cn.kkmofang.duktape.Context implements cn.kkmofang.
 
         if(isFunction(-1)) {
 
-            Heapptr func = new Heapptr(this,-1);
+            Heapptr func = new Heapptr(this,getHeapptr(-1));
 
             pop();
 

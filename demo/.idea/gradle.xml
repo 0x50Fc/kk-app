@@ -11,9 +11,10 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/../kk-app" />
             <option value="$PROJECT_DIR$/../../kk-duktape/kk-duktape" />
+            <option value="$PROJECT_DIR$/../../kk-http/kk-http" />
             <option value="$PROJECT_DIR$/../../kk-observer/kk-observer" />
             <option value="$PROJECT_DIR$/../../kk-script/kk-script" />
-            <option value="$PROJECT_DIR$/../../kk-view/view" />
+            <option value="$PROJECT_DIR$/../../kk-view/kk-view" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

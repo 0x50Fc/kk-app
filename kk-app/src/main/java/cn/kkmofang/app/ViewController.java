@@ -39,7 +39,7 @@ public class ViewController extends Controller {
 
         if(app != null && path != null) {
 
-            Element e = app.element(path,page);
+            Element e = app.element(path + "_view.js",page);
 
             if(e != null && e instanceof ViewElement) {
                 _element = (ViewElement) e;

@@ -121,6 +121,7 @@
     <orderEntry type="library" exported="" scope="TEST" name="jsr305-2.0.1" level="project" />
     <orderEntry type="module" module-name="kk-script" exported="" />
     <orderEntry type="module" module-name="kk-duktape" exported="" />
+    <orderEntry type="module" module-name="kk-http" exported="" />
     <orderEntry type="module" module-name="kk-view" exported="" />
     <orderEntry type="module" module-name="kk-observer" exported="" />
     <orderEntry type="library" exported="" name="recyclerview-v7-25.3.1" level="project" />

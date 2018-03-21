@@ -12,11 +12,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import cn.kkmofang.http.IHttp;
 import cn.kkmofang.observer.IObserver;
 import cn.kkmofang.observer.Observer;
 import cn.kkmofang.script.IScriptFunction;
 import cn.kkmofang.script.ScriptContext;
 import cn.kkmofang.view.Element;
+import cn.kkmofang.view.IViewContext;
+import cn.kkmofang.view.ViewContext;
 
 /**
  * Created by zhanghailong on 2018/3/12.
@@ -31,13 +34,17 @@ public class Application {
     private final IResource _resource;
     private final Handler _handler;
     private final Activity _activity;
+    private final IHttp _http;
+    private final IViewContext _viewContext;
 
-    public Application(IResource resource,Activity activity) {
+    public Application(Activity activity,IResource resource,IHttp http,IViewContext viewContext) {
         _context = new Context();
         _observer = new Observer(_context);
         _resource = resource;
         _handler = new Handler();
         _activity = activity;
+        _http = http;
+        _viewContext = viewContext;
 
         final WeakReference<Application> app = new WeakReference<Application>(this);
 
@@ -120,6 +127,8 @@ public class Application {
 
     }
 
+
+
     public Controller open(Object action) {
 
         Class<?> clazz = null;
@@ -186,14 +195,23 @@ public class Application {
         return _activity;
     }
 
+    public IViewContext viewContext() {
+        return _viewContext;
+    }
+
     public void execCode(String code,Map<String,Object> librarys) {
+        ViewContext.push(_viewContext);
         ScriptContext.pushContext(context());
 
         if(librarys == null) {
             librarys = new TreeMap<String,Object>();
         }
 
-        librarys.put("app",_observer);
+        librarys.put("app",new JSObserver(_observer));
+
+        if(_http != null) {
+            librarys.put("http",new JSHttp(_http));
+        }
 
         List<Object> arguments = new ArrayList<>();
 
@@ -232,6 +250,7 @@ public class Application {
 
 
         ScriptContext.popContext();
+        ViewContext.pop();
     }
 
     public void exec(String name,Map<String,Object> librarys) {
@@ -249,6 +268,8 @@ public class Application {
     public Element element(String path,IObserver data) {
 
         Element root = new Element();
+
+        ViewContext.push(_viewContext);
 
         String code = _resource.getString(path);
 
@@ -272,6 +293,8 @@ public class Application {
             }
         }
 
+        ViewContext.pop();
+
         return root.lastChild();
     }
 
@@ -284,12 +307,15 @@ public class Application {
             public void run() {
                 Application v = app.get();
                 if(v != null) {
+                    ViewContext.push(v.viewContext());
                     ScriptContext.pushContext(v.context());
                     r.run();
                     ScriptContext.popContext();
+                    ViewContext.pop();
                 }
             }
         });
     }
+
 
 }

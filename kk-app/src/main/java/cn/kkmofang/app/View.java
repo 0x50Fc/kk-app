@@ -1,6 +1,8 @@
 package cn.kkmofang.app;
 
 import android.util.Log;
+import android.widget.Button;
+
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -15,7 +17,17 @@ import cn.kkmofang.observer.Observer;
 import cn.kkmofang.script.IScriptFunction;
 import cn.kkmofang.script.IScriptObject;
 import cn.kkmofang.script.ScriptContext;
+import cn.kkmofang.view.BodyElement;
+import cn.kkmofang.view.ButtonElement;
 import cn.kkmofang.view.Element;
+import cn.kkmofang.view.ImageElement;
+import cn.kkmofang.view.ImgElement;
+import cn.kkmofang.view.PagerElement;
+import cn.kkmofang.view.ScrollElement;
+import cn.kkmofang.view.SpanElement;
+import cn.kkmofang.view.SwitchElement;
+import cn.kkmofang.view.TextElement;
+import cn.kkmofang.view.ViewElement;
 import cn.kkmofang.view.event.Event;
 import cn.kkmofang.view.event.EventFunction;
 
@@ -27,9 +39,38 @@ public class View {
 
     private final static Map<String,Class<?>> _elements = new TreeMap<>();
 
+    static {
+        /*
+        [KKPagerViewElement class];
+    [KKTextElement class];
+    [KKSpanElement class];
+    [KKImgElement class];
+    [KKImageElement class];
+    [KKControlViewElement class];
+    [KKLoadingViewElement class];
+    [KKSwitchViewElement class];
+    [KKQRElement class];
+    [KKQRCaptureElement class];
+    [KKBodyElement class];
+    [KKKeyboardElement class];
+    [KKTopbarElement class];
+         */
+        _elements.put("view", ViewElement.class);
+        _elements.put("body", BodyElement.class);
+        _elements.put("text", TextElement.class);
+        _elements.put("span", SpanElement.class);
+        _elements.put("img", ImgElement.class);
+        _elements.put("image", ImageElement.class);
+        _elements.put("button", ButtonElement.class);
+        _elements.put("switch", SwitchElement.class);
+        _elements.put("pager", PagerElement.class);
+        _elements.put("scroll", ScrollElement.class);
+    }
+
     public static void setElementClass(String name,Class<?> elementClass) {
         _elements.put(name,elementClass);
     }
+
 
     public static Element newElement(String name) {
 

@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.view.*;
 
 import cn.kkmofang.view.DocumentView;
+import cn.kkmofang.view.ViewContext;
 
 /**
  * Created by hailong11 on 2018/3/21.
@@ -31,18 +32,25 @@ public class ControllerFragment extends Fragment {
         _controller = controller;
     }
 
-    public android.view.View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
+    public android.view.View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
 
-        DocumentView view = new DocumentView(container.getContext());
+        final DocumentView view = new DocumentView(container.getContext());
         view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
-        container.addView(view);
 
-        ViewController viewController = getViewController();
+        final Controller controller = _controller;
 
-        if(viewController != null) {
-            viewController.run(view);
-        } else if(_controller != null) {
-            _controller.run();
+        if(controller != null) {
+
+            controller.application().post(new Runnable() {
+                @Override
+                public void run() {
+                    if(controller instanceof ViewController) {
+                        ((ViewController) controller).run(view);
+                    } else {
+                        controller.run();
+                    }
+                }
+            });
         }
 
         return view;

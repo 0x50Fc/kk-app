@@ -1,6 +1,5 @@
 package cn.kkmofang.demo;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -23,7 +22,8 @@ public class MainActivity extends FragmentActivity {
 
         final FragmentManager fmg = getSupportFragmentManager();
 
-        Application app = new Application(new AssetResource(getAssets(),"main/"),this);
+        Application app = new Application(this,new AssetResource(getAssets(),"main/"),null
+                ,new AssetViewContext(getApplicationContext(),getAssets(),"main/"));
 
         app.observer().on(new String[]{"action", "open"}, new Listener<Application>() {
             @Override

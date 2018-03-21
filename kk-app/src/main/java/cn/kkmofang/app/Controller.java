@@ -60,7 +60,7 @@ public class Controller {
 
             Map<String,Object> libs = new TreeMap<>();
 
-            libs.put("page",page());
+            libs.put("page",new JSObserver(page()));
             libs.put("query",query());
             libs.put("path",path());
 
