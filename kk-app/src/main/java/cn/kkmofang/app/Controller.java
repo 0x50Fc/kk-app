@@ -1,13 +1,16 @@
 package cn.kkmofang.app;
 
+import android.renderscript.Script;
+
 import java.util.Map;
 import java.util.TreeMap;
 
 import cn.kkmofang.observer.IObserver;
 import cn.kkmofang.observer.Observer;
+import cn.kkmofang.script.ScriptContext;
 
 /**
- * Created by hailong11 on 2018/3/13.
+ * Created by zhanghailong on 2018/3/13.
  */
 
 public class Controller {
@@ -97,6 +100,16 @@ public class Controller {
     public void recycle() {
         if(_page != null) {
             _page.off(new String[]{},null,null);
+        }
+    }
+
+    public void setAction(Object action) {
+        setPath(ScriptContext.stringValue(ScriptContext.get(action,"path"),null));
+        {
+            Object v = ScriptContext.get(action,"query");
+            if(v instanceof Map) {
+                setQuery((Map<String,Object>) v);
+            }
         }
     }
 

@@ -1,8 +1,11 @@
 package cn.kkmofang.app;
 
+import android.app.Activity;
 import android.os.Handler;
 import android.util.Log;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,25 +19,25 @@ import cn.kkmofang.script.ScriptContext;
 import cn.kkmofang.view.Element;
 
 /**
- * Created by hailong11 on 2018/3/12.
+ * Created by zhanghailong on 2018/3/12.
  */
 
 public class Application {
 
     public final static double Kernel = 1.0;
 
-    private static final ClassResource RES = new ClassResource(Application.class);
-
     private final IObserver _observer;
     private final Context _context;
     private final IResource _resource;
     private final Handler _handler;
+    private final Activity _activity;
 
-    public Application(IResource resource) {
+    public Application(IResource resource,Activity activity) {
         _context = new Context();
         _observer = new Observer(_context);
         _resource = resource;
         _handler = new Handler();
+        _activity = activity;
 
         final WeakReference<Application> app = new WeakReference<Application>(this);
 
@@ -96,12 +99,76 @@ public class Application {
         _context.pop();
 
         {
-            String code = RES.getString("js/require.js");
-            execCode(code,null);
+            String code = null;
+            InputStream in = _activity.getResources().openRawResource(R.raw.require);
+            try {
+                code = FileResource.getString(in);
+            }
+            finally {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    Log.d(Context.TAG,Log.getStackTraceString(e));
+                }
+            }
+            if(code != null) {
+                execCode(code, null);
+            }
         }
 
         ScriptContext.popContext();
+
     }
+
+    public Controller open(Object action) {
+
+        Class<?> clazz = null;
+
+        {
+            String v = ScriptContext.stringValue(ScriptContext.get(action,"class"),null);
+
+            if(v != null) {
+                try {
+                    clazz = Class.forName(v);
+                } catch (ClassNotFoundException e) {
+                    Log.d(Context.TAG,Log.getStackTraceString(e));
+                }
+            }
+        }
+
+        if(clazz == null) {
+
+            String v = ScriptContext.stringValue(ScriptContext.get(action,"path"),null);
+
+            if(v != null) {
+                clazz = ViewController.class;
+            }
+        }
+
+        if(clazz == null) {
+            clazz = Controller.class;
+        }
+
+        Controller v = null;
+
+        try {
+            v = (Controller) clazz.newInstance();
+        } catch (InstantiationException e) {
+            Log.d(Context.TAG,Log.getStackTraceString(e));
+        } catch (IllegalAccessException e) {
+            Log.d(Context.TAG,Log.getStackTraceString(e));
+        }
+
+        if(v == null) {
+            v = new Controller();
+        }
+
+        v.setApplication(this);
+        v.setAction(action);
+
+        return v;
+    }
+
 
     public Context context() {
         return _context;
@@ -113,6 +180,10 @@ public class Application {
 
     public IResource resource() {
         return _resource;
+    }
+
+    public Activity activity() {
+        return _activity;
     }
 
     public void execCode(String code,Map<String,Object> librarys) {
@@ -169,6 +240,10 @@ public class Application {
         if(code != null) {
             execCode(code,librarys);
         }
+    }
+
+    public void run() {
+        exec("main.js",null);
     }
 
     public Element element(String path,IObserver data) {

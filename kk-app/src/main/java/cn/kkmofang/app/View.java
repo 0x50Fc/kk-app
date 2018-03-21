@@ -1,17 +1,13 @@
 package cn.kkmofang.app;
 
-import android.renderscript.Script;
 import android.util.Log;
-
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
 import cn.kkmofang.duktape.Heapptr;
 import cn.kkmofang.observer.IObserver;
 import cn.kkmofang.observer.Listener;
@@ -24,7 +20,7 @@ import cn.kkmofang.view.event.Event;
 import cn.kkmofang.view.event.EventFunction;
 
 /**
- * Created by hailong11 on 2018/3/13.
+ * Created by zhanghailong on 2018/3/13.
  */
 
 public class View {

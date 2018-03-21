@@ -2,29 +2,32 @@ package cn.kkmofang.app;
 
 import android.util.Log;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 
 /**
- * Created by hailong11 on 2018/3/13.
+ * Created by hailong11 on 2018/3/21.
  */
 
-public class ClassResource implements IResource {
+public class FileResource implements IResource{
 
     public final static Charset UTF8 = Charset.forName("UTF-8");
 
-    private final Class<?> _clazz;
+    private final File _basePath;
 
-    public ClassResource(Class<?> clazz) {
-        _clazz = clazz;
+    public File getBasePath() {
+        return _basePath;
     }
 
-    @Override
-    public String getString(String name) {
+    public FileResource(File basePath) {
+        _basePath = basePath;
+    }
 
-        InputStream in = _clazz.getResourceAsStream(name);
+    public static String getString(InputStream in) {
 
         if(in != null) {
             InputStreamReader rd = new InputStreamReader(in, UTF8);
@@ -32,7 +35,7 @@ public class ClassResource implements IResource {
             StringBuffer sb = new StringBuffer();
             int n ;
             try {
-                while((n = rd.read()) > 0) {
+                while((n = rd.read(data)) > 0) {
                     sb.append(data,0,n);
                 }
             } catch (IOException e) {
@@ -49,4 +52,23 @@ public class ClassResource implements IResource {
 
         return null;
     }
+
+    @Override
+    public String getString(String name) {
+
+        try {
+            FileInputStream in = new FileInputStream(new File(_basePath,name));
+            try {
+                return getString(in);
+            }
+            finally {
+                in.close();
+            }
+        } catch (IOException e) {
+            Log.d(Context.TAG,Log.getStackTraceString(e));
+        }
+
+        return null;
+    }
+
 }
