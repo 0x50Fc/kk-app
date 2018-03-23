@@ -2,7 +2,13 @@ package cn.kkmofang.demo;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.NinePatch;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.NinePatchDrawable;
 import android.util.Log;
 
 import com.bumptech.glide.Glide;
@@ -13,11 +19,14 @@ import com.bumptech.glide.request.target.SimpleTarget;
 import java.io.IOException;
 import java.io.InputStream;
 
+import cn.kkmofang.script.ScriptContext;
 import cn.kkmofang.view.IViewContext;
 import cn.kkmofang.view.ImageCallback;
 import cn.kkmofang.view.ImageStyle;
 import cn.kkmofang.view.ImageTask;
 import cn.kkmofang.view.value.Pixel;
+import ua.anatolii.graphics.ninepatch.Div;
+import ua.anatolii.graphics.ninepatch.NinePatchChunk;
 
 /**
  * Created by hailong11 on 2018/3/21.
@@ -72,6 +81,14 @@ public class AssetViewContext implements IViewContext {
 
         String path = _basePath + vs[0];
 
+        if(vs.length > 1) {
+            style.capLeft = ScriptContext.intValue(vs[1],0);
+        }
+
+        if(vs.length > 2) {
+            style.capTop = ScriptContext.intValue(vs[2],0);
+        }
+
         String ext = "";
 
         int i = path.lastIndexOf(".");
@@ -92,7 +109,30 @@ public class AssetViewContext implements IViewContext {
                 InputStream in = _asset.open(name);
 
                 try {
-                    return Drawable.createFromStream(in,path);
+
+                    BitmapFactory.Options opt = new BitmapFactory.Options();
+
+                    int targetDensity = _context.getResources().getDisplayMetrics().densityDpi;
+
+                    opt.inDensity = scale * targetDensity;
+                    opt.inTargetDensity = targetDensity;
+
+                    Bitmap bitmap = BitmapFactory.decodeStream(in,null,opt);
+
+
+                    if(style.capLeft >0 || style.capTop > 0) {
+
+                        NinePatchChunk chunk = NinePatchChunk.createEmptyChunk();
+
+                        chunk.padding.set(0,0,bitmap.getWidth(),bitmap.getHeight());
+                        chunk.xDivs.add(new Div(style.capLeft,style.capLeft + 1));
+                        chunk.yDivs.add(new Div(style.capTop,style.capTop + 1));
+
+                        return new NinePatchDrawable(Resources.getSystem(),bitmap,chunk.toBytes(),chunk.padding,name);
+
+                    } else {
+                        return new BitmapDrawable(_context.getResources(),bitmap);
+                    }
                 } finally {
                     try {
                         in.close();

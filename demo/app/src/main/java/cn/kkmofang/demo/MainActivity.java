@@ -1,5 +1,6 @@
 package cn.kkmofang.demo;
 
+import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -11,6 +12,7 @@ import cn.kkmofang.app.ControllerFragment;
 import cn.kkmofang.observer.IObserver;
 import cn.kkmofang.observer.Listener;
 import cn.kkmofang.observer.Observer;
+import cn.kkmofang.view.value.Pixel;
 
 public class MainActivity extends FragmentActivity {
 
@@ -20,6 +22,12 @@ public class MainActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Point size = new Point();
+
+        getWindowManager().getDefaultDisplay().getSize(size);
+
+        Pixel.UnitRPX = size.x / 750.0f;
+        
         final FragmentManager fmg = getSupportFragmentManager();
 
         Application app = new Application(this,new AssetResource(getAssets(),"main/"),null

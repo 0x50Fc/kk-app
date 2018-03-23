@@ -32,7 +32,6 @@ public class Application {
     private final IObserver _observer;
     private final Context _context;
     private final IResource _resource;
-    private final Handler _handler;
     private final Activity _activity;
     private final IHttp _http;
     private final IViewContext _viewContext;
@@ -41,7 +40,6 @@ public class Application {
         _context = new Context();
         _observer = new Observer(_context);
         _resource = resource;
-        _handler = new Handler();
         _activity = activity;
         _http = http;
         _viewContext = viewContext;
@@ -302,15 +300,13 @@ public class Application {
 
         final WeakReference<Application> app = new WeakReference<Application>(this);
 
-        _handler.post(new Runnable() {
+        _context.post(new Runnable() {
             @Override
             public void run() {
                 Application v = app.get();
                 if(v != null) {
                     ViewContext.push(v.viewContext());
-                    ScriptContext.pushContext(v.context());
                     r.run();
-                    ScriptContext.popContext();
                     ViewContext.pop();
                 }
             }
