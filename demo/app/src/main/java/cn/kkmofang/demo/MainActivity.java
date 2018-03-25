@@ -1,8 +1,10 @@
 package cn.kkmofang.demo;
 
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.view.Window;
 
 import cn.kkmofang.app.Application;
 import cn.kkmofang.app.AssetResource;
@@ -18,6 +20,7 @@ public class MainActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         setContentView(R.layout.activity_main);
 
         final FragmentManager fmg = getSupportFragmentManager();
