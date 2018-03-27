@@ -1,9 +1,12 @@
 package cn.kkmofang.demo;
 
 import android.graphics.Point;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.util.DisplayMetrics;
+import android.view.Window;
 
 import cn.kkmofang.app.Application;
 import cn.kkmofang.app.AssetResource;
@@ -20,14 +23,19 @@ public class MainActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         setContentView(R.layout.activity_main);
 
         Point size = new Point();
 
         getWindowManager().getDefaultDisplay().getSize(size);
 
-        Pixel.UnitRPX = size.x / 750.0f;
-        
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        Pixel.UnitPX = metrics.density;
+        Pixel.UnitRPX = Math.min(size.x,size.y) / 750.0f;
+        System.out.println("UnitRPX:" + Pixel.UnitPX + ":" + size.y + ":" + size.x);
+
         final FragmentManager fmg = getSupportFragmentManager();
 
         Application app = new Application(this,new AssetResource(getAssets(),"main/"),null

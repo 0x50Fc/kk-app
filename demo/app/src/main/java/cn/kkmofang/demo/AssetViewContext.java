@@ -9,6 +9,7 @@ import android.graphics.NinePatch;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.bumptech.glide.Glide;
@@ -52,23 +53,27 @@ public class AssetViewContext implements IViewContext {
     @Override
     public ImageTask getImage(String url, ImageStyle style, final ImageCallback callback) {
 
-        Glide.with(_context)
-                .load(url)
-                .bitmapTransform(new RoundCornersTransformation(_context, style.radius,
-                        RoundCornersTransformation.CornerType.ALL))
-                .into(new SimpleTarget<GlideDrawable>() {
-                    @Override
-                    public void onResourceReady(GlideDrawable glideDrawable, GlideAnimation<? super GlideDrawable> glideAnimation) {
-                        callback.onImage(glideDrawable);
-                    }
-                });
+        if (TextUtils.isEmpty(url) || url.startsWith("http://") || url.startsWith("https://")){
+            Glide.with(_context)
+                    .load(url)
+                    .bitmapTransform(new RoundCornersTransformation(_context, style.radius,
+                            RoundCornersTransformation.CornerType.ALL))
+                    .into(new SimpleTarget<GlideDrawable>() {
+                        @Override
+                        public void onResourceReady(GlideDrawable glideDrawable, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                            callback.onImage(glideDrawable);
+                        }
+                    });
+        }else {
+            callback.onImage(getImage(url, style));
+        }
 
         return null;
     }
 
     @Override
     public Drawable getImage(String url, ImageStyle style) {
-
+        System.out.println("getImage:  " + url);
         if(url == null) {
             return null;
         }
@@ -82,11 +87,11 @@ public class AssetViewContext implements IViewContext {
         String path = _basePath + vs[0];
 
         if(vs.length > 1) {
-            style.capLeft = ScriptContext.intValue(vs[1],0);
+            style.capLeft = (int) (ScriptContext.intValue(vs[1],0) * Pixel.UnitPX);
         }
 
         if(vs.length > 2) {
-            style.capTop = ScriptContext.intValue(vs[2],0);
+            style.capTop = (int) (ScriptContext.intValue(vs[2],0) * Pixel.UnitPX);
         }
 
         String ext = "";
