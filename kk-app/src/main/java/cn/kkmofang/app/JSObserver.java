@@ -192,9 +192,11 @@ public class JSObserver implements IScriptObject {
                                     ctx.pushHeapptr(fn.heapptr());
                                     ctx.pushValue(changedKeys);
                                     ctx.pushValue(value);
+                                    cn.kkmofang.duktape.Context.pushContext(ctx);
                                     if(Context.DUK_EXEC_SUCCESS != ctx.pcall(2)) {
                                         Log.d(Context.TAG,ctx.getErrorString(-1));
                                     }
+                                    cn.kkmofang.duktape.Context.popContext();
                                     ctx.pop();
                                 }
                             }

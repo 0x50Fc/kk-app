@@ -35,6 +35,11 @@ public class JSHttp implements IScriptObject{
 
             int top = ctx.getTop();
 
+            /**
+             * {
+             *
+             * }
+             */
             if(top >0 && ctx.isObject(-top)) {
 
 

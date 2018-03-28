@@ -32,9 +32,10 @@ public class MainActivity extends FragmentActivity {
 
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        Pixel.UnitPX = metrics.density;
         Pixel.UnitRPX = Math.min(size.x,size.y) / 750.0f;
-        System.out.println("UnitRPX:" + Pixel.UnitPX + ":" + size.y + ":" + size.x);
+        Pixel.UnitPX = metrics.density;
+
+        System.out.println("UnitPX:" + Pixel.UnitPX + ":" + Pixel.UnitRPX + ":" + size.x + ":" + size.y + ":" + metrics.densityDpi);
 
         final FragmentManager fmg = getSupportFragmentManager();
 
