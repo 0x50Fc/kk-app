@@ -19,6 +19,7 @@ public class Controller {
     private IObserver _page;
     private Map<String,Object> _query;
     private String _path;
+    private String _type;
 
     public Application application() {
         return _application;
@@ -48,6 +49,14 @@ public class Controller {
 
     public String path() {
         return _path;
+    }
+
+    public String getType() {
+        return _type;
+    }
+
+    public void setType(String _type) {
+        this._type = _type;
     }
 
     public void setPath(String path) {
@@ -105,6 +114,7 @@ public class Controller {
 
     public void setAction(Object action) {
         setPath(ScriptContext.stringValue(ScriptContext.get(action,"path"),null));
+        setType(ScriptContext.stringValue(ScriptContext.get(action, "type"), null));
         {
             Object v = ScriptContext.get(action,"query");
             if(v instanceof Map) {

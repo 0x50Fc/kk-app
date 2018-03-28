@@ -1,11 +1,21 @@
 package cn.kkmofang.app;
 
 import android.annotation.SuppressLint;
+import android.content.*;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.CallSuper;
+import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.*;
+import android.widget.Toast;
 
+import cn.kkmofang.observer.IObserver;
+import cn.kkmofang.observer.Listener;
+import cn.kkmofang.observer.Observer;
+import cn.kkmofang.script.ScriptContext;
 import cn.kkmofang.view.DocumentView;
 import cn.kkmofang.view.ViewContext;
 
@@ -51,6 +61,15 @@ public class ControllerFragment extends Fragment {
                     }
                 }
             });
+
+            controller.page().on(new String[]{"action", "close"}, new Listener<Application>() {
+                @Override
+                public void onChanged(IObserver observer, String[] changedKeys, Object value, Application weakObject) {
+                    if (weakObject != null){
+                        weakObject.activity().onBackPressed();
+                    }
+                }
+            }, controller.application(), Observer.PRIORITY_NORMAL,false);
         }
 
         return view;
@@ -75,5 +94,13 @@ public class ControllerFragment extends Fragment {
         }
 
         super.onStop();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (_controller != null){
+            _controller.recycle();
+        }
     }
 }
