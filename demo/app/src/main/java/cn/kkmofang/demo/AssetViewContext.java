@@ -38,6 +38,8 @@ public class AssetViewContext implements IViewContext {
     private final Context _context;
     private final AssetManager _asset;
     private final String _basePath;
+    //支持的图片格式
+    private static final String[] extArray = {".png", ".jpg", "bmp", ".gif", ".webp"};
 
     public AssetViewContext(Context context,AssetManager asset,String basePath) {
         _context = context;
@@ -73,7 +75,6 @@ public class AssetViewContext implements IViewContext {
 
     @Override
     public Drawable getImage(String url, ImageStyle style) {
-        System.out.println("getImage:  " + url);
         if(url == null) {
             return null;
         }
@@ -103,50 +104,54 @@ public class AssetViewContext implements IViewContext {
             path = path.substring(0,i);
         }
 
-        int scale = 3;
 
-        while(scale > 0) {
+        for (String mExt : extArray) {
+            int scale = 3;
+            while(scale > 0) {
 
-            String name = scale > 1 ? path + "@" + scale + "x" + ext : path  + ext;
-
-            try {
-
-                InputStream in = _asset.open(name);
+                String name = scale > 1 ? path + "@" + scale + "x" + (TextUtils.isEmpty(ext)?mExt:ext) :
+                        path  + (TextUtils.isEmpty(ext)?mExt:ext);
 
                 try {
 
-                    BitmapFactory.Options opt = new BitmapFactory.Options();
+                    InputStream in = _asset.open(name);
 
-                    int targetDensity = _context.getResources().getDisplayMetrics().densityDpi;
-
-                    opt.inDensity = scale * targetDensity;
-                    opt.inTargetDensity = targetDensity;
-
-                    Bitmap bitmap = BitmapFactory.decodeStream(in,null,opt);
-
-
-                    if(style.capLeft >0 || style.capTop > 0) {
-
-                        NinePatchChunk chunk = NinePatchChunk.createEmptyChunk();
-
-                        chunk.padding.set(0,0,bitmap.getWidth(),bitmap.getHeight());
-                        chunk.xDivs.add(new Div(style.capLeft,style.capLeft + 1));
-                        chunk.yDivs.add(new Div(style.capTop,style.capTop + 1));
-
-                        return new NinePatchDrawable(Resources.getSystem(),bitmap,chunk.toBytes(),chunk.padding,name);
-
-                    } else {
-                        return new BitmapDrawable(_context.getResources(),bitmap);
-                    }
-                } finally {
                     try {
-                        in.close();
-                    } catch (IOException e) {}
-                }
 
-            } catch (IOException e) {
-                scale --;
+                        BitmapFactory.Options opt = new BitmapFactory.Options();
+
+                        int targetDensity = _context.getResources().getDisplayMetrics().densityDpi;
+
+                        opt.inDensity = scale * targetDensity;
+                        opt.inTargetDensity = targetDensity;
+
+                        Bitmap bitmap = BitmapFactory.decodeStream(in,null,opt);
+
+
+                        if(style.capLeft >0 || style.capTop > 0) {
+
+                            NinePatchChunk chunk = NinePatchChunk.createEmptyChunk();
+
+                            chunk.padding.set(0,0,bitmap.getWidth(),bitmap.getHeight());
+                            chunk.xDivs.add(new Div(style.capLeft,style.capLeft + 1));
+                            chunk.yDivs.add(new Div(style.capTop,style.capTop + 1));
+
+                            return new NinePatchDrawable(Resources.getSystem(),bitmap,chunk.toBytes(),chunk.padding,name);
+
+                        } else {
+                            return new BitmapDrawable(_context.getResources(),bitmap);
+                        }
+                    } finally {
+                        try {
+                            in.close();
+                        } catch (IOException e) {}
+                    }
+
+                } catch (IOException e) {
+                    scale --;
+                }
             }
+            if (!TextUtils.isEmpty(ext))break;
         }
 
         return null;
