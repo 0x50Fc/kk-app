@@ -133,7 +133,7 @@ public class AssetViewContext implements IViewContext {
                             NinePatchChunk chunk = NinePatchChunk.createEmptyChunk();
 
                             chunk.padding.set(0,0,bitmap.getWidth(),bitmap.getHeight());
-                            chunk.xDivs.add(new Div(style.capLeft,style.capLeft + 1));
+                            chunk.xDivs.add(new Div(style.capLeft ,style.capLeft + 1));
                             chunk.yDivs.add(new Div(style.capTop,style.capTop + 1));
 
                             return new NinePatchDrawable(Resources.getSystem(),bitmap,chunk.toBytes(),chunk.padding,name);

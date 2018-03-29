@@ -33,16 +33,12 @@ public class MainActivity extends FragmentActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         setContentView(R.layout.activity_main);
 
-        Point size = new Point();
 
-        getWindowManager().getDefaultDisplay().getSize(size);
+        DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getRealMetrics(dm);
 
-        DisplayMetrics metrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        Pixel.UnitRPX = Math.min(size.x,size.y) / 750.0f;
-        Pixel.UnitPX = metrics.density;
-
-        System.out.println("UnitPX:" + Pixel.UnitPX + ":" + Pixel.UnitRPX + ":" + size.x + ":" + size.y + ":" + metrics.densityDpi);
+        Pixel.UnitRPX = Math.min(dm.widthPixels,dm.heightPixels) / 750.0f;
+        Pixel.UnitPX = dm.density;
 
         fmg = getSupportFragmentManager();
 
