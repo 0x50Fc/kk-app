@@ -42,6 +42,7 @@ public class MainActivity extends FragmentActivity {
 
         fmg = getSupportFragmentManager();
 
+
         Application app = new Application(this,new AssetResource(getAssets(),"main/"),null
                 ,new AssetViewContext(getApplicationContext(),getAssets(),"main/"));
 
