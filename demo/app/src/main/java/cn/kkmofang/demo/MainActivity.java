@@ -27,7 +27,7 @@ public class MainActivity extends FragmentActivity {
         getWindowManager().getDefaultDisplay().getSize(size);
 
         Pixel.UnitRPX = size.x / 750.0f;
-        
+
         final FragmentManager fmg = getSupportFragmentManager();
 
         Application app = new Application(this,new AssetResource(getAssets(),"main/"),null
