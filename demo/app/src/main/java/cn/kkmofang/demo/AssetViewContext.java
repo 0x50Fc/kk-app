@@ -85,14 +85,15 @@ public class AssetViewContext implements IViewContext {
 
         String[] vs = url.split(" ");
 
+
         String path = _basePath + vs[0];
 
         if(vs.length > 1) {
-            style.capLeft = (int) (ScriptContext.intValue(vs[1],0) * Pixel.UnitPX);
+            style.capLeft = (int) (ScriptContext.intValue(vs[1],0));
         }
 
         if(vs.length > 2) {
-            style.capTop = (int) (ScriptContext.intValue(vs[2],0) * Pixel.UnitPX);
+            style.capTop = (int) (ScriptContext.intValue(vs[2],0));
         }
 
         String ext = "";
@@ -119,22 +120,31 @@ public class AssetViewContext implements IViewContext {
                     try {
 
                         BitmapFactory.Options opt = new BitmapFactory.Options();
+                        opt.inJustDecodeBounds = true;
+                        BitmapFactory.decodeStream(in, null, opt);
+                        int inSampleSize = 1;
+                        if (style.height > 0 && style.width > 0){
+                            inSampleSize = calcuteInsampleSize(opt, style.width, style.height);
+                        }
+                        opt.inSampleSize = inSampleSize;
+                        opt.inJustDecodeBounds = false;
 
-                        int targetDensity = _context.getResources().getDisplayMetrics().densityDpi;
-
-                        opt.inDensity = scale * targetDensity;
-                        opt.inTargetDensity = targetDensity;
-
+                        in = _asset.open(name);
                         Bitmap bitmap = BitmapFactory.decodeStream(in,null,opt);
 
 
                         if(style.capLeft >0 || style.capTop > 0) {
 
-                            NinePatchChunk chunk = NinePatchChunk.createEmptyChunk();
+                            int capLeft = style.capLeft * scale / inSampleSize;
+                            int capTop = style.capTop * scale / inSampleSize;
 
-                            chunk.padding.set(0,0,bitmap.getWidth(),bitmap.getHeight());
-                            chunk.xDivs.add(new Div(style.capLeft ,style.capLeft + 1));
-                            chunk.yDivs.add(new Div(style.capTop,style.capTop + 1));
+                            NinePatchChunk chunk = NinePatchChunk.createEmptyChunk();
+                            System.out.println("NinePatchChunk:"+ capLeft + ":" + capTop);
+
+
+//                            chunk.padding.set(0,0,bitmap.getWidth(),bitmap.getHeight());
+                            chunk.xDivs.add(new Div(capLeft  ,capLeft + 1));
+                            chunk.yDivs.add(new Div(capTop , capTop  + 1));
 
                             return new NinePatchDrawable(Resources.getSystem(),bitmap,chunk.toBytes(),chunk.padding,name);
 
@@ -155,5 +165,19 @@ public class AssetViewContext implements IViewContext {
         }
 
         return null;
+    }
+
+    public int calcuteInsampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight){
+        int height = options.outHeight;
+        int width = options.outWidth;
+        int inSampleSize = 1;
+        if (height > reqHeight || width > reqWidth){
+            int halfWidth = width / 2;
+            int halfHeight = height / 2;
+            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth){
+                inSampleSize *= 2;
+            }
+        }
+        return inSampleSize;
     }
 }

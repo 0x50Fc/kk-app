@@ -36,8 +36,13 @@ public class MainActivity extends FragmentActivity {
 
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getRealMetrics(dm);
+        DisplayMetrics outMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(outMetrics);
 
-        Pixel.UnitRPX = Math.min(dm.widthPixels,dm.heightPixels) / 750.0f;
+
+        System.out.println("Metrics:" + dm.widthPixels+":"+dm.heightPixels+":"+outMetrics.widthPixels+":"+outMetrics.heightPixels);
+
+        Pixel.UnitRPX = Math.min(outMetrics.widthPixels,outMetrics.heightPixels) / 750.0f;
         Pixel.UnitPX = dm.density;
 
         fmg = getSupportFragmentManager();
