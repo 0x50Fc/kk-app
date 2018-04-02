@@ -65,7 +65,7 @@ public class ControllerFragment extends Fragment {
             controller.page().on(new String[]{"action", "close"}, new Listener<Application>() {
                 @Override
                 public void onChanged(IObserver observer, String[] changedKeys, Object value, Application weakObject) {
-                    if (weakObject != null){
+                    if (weakObject != null && weakObject.activity() != null){
                         weakObject.activity().onBackPressed();
                     }
                 }

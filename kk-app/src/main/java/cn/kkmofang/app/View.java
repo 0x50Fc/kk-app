@@ -79,8 +79,11 @@ public class View {
         if(name != null && _elements.containsKey(name)) {
             clazz = _elements.get(name);
         }
-
+        System.out.println("newElement:" + name);
         try {
+            if ("scroll".equals(name)){
+                return new ScrollElement();
+            }
             return (Element) clazz.newInstance();
         } catch (Throwable e) {
             Log.d(Context.TAG,Log.getStackTraceString(e));

@@ -3,6 +3,7 @@ package cn.kkmofang.app;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.support.annotation.NonNull;
 import android.support.annotation.StyleRes;
 import android.view.*;
@@ -31,6 +32,7 @@ public class ControlDialog extends Dialog {
         private ControlDialog cDialog;
         private DocumentView contentView;
         private Context context;
+        private Controller controller;
 
 
         public Builder(Context context) {
@@ -40,6 +42,14 @@ public class ControlDialog extends Dialog {
 
             cDialog.addContentView(contentView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT));
+            cDialog.setOnDismissListener(new OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialog) {
+                    if (controller != null){
+                        controller.recycle();
+                    }
+                }
+            });
         }
 
         public ControlDialog create(){
@@ -47,13 +57,12 @@ public class ControlDialog extends Dialog {
         }
 
         public void runView(final Controller controller){
-
+            this.controller = controller;
             controller.page().on(new String[]{"action", "close"}, new Listener<Application>() {
                 @Override
                 public void onChanged(IObserver observer, String[] changedKeys, Object value, Application weakObject) {
                     if (cDialog != null && cDialog.isShowing()){
                         cDialog.dismiss();
-
                     }
                 }
             }, controller.application(), Observer.PRIORITY_NORMAL, false);

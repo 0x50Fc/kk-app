@@ -24,29 +24,9 @@ import cn.kkmofang.view.value.Pixel;
 
 public class MainActivity extends FragmentActivity {
 
-
-    private FragmentManager fmg;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        setContentView(R.layout.activity_main);
-
-
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getRealMetrics(dm);
-        DisplayMetrics outMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(outMetrics);
-
-
-        System.out.println("Metrics:" + dm.widthPixels+":"+dm.heightPixels+":"+outMetrics.widthPixels+":"+outMetrics.heightPixels);
-
-        Pixel.UnitRPX = Math.min(outMetrics.widthPixels,outMetrics.heightPixels) / 750.0f;
-        Pixel.UnitPX = dm.density;
-
-        fmg = getSupportFragmentManager();
-
 
         Application app = new Application(this,new AssetResource(getAssets(),"main/"),null
                 ,new AssetViewContext(getApplicationContext(),getAssets(),"main/"));
@@ -59,27 +39,13 @@ public class MainActivity extends FragmentActivity {
                     if ("window".equals(controller.getType())){
                         new ControlDialog.Builder(weakObject.activity()).runView(controller);
                     }else {
-                        ControllerFragment fragment = new ControllerFragment();
-                        fragment.setController(controller);
-                        FragmentTransaction ft = fmg.beginTransaction();
-                        ft.add(R.id.contentView, fragment);
-                        ft.addToBackStack(null);
-                        ft.commit();
+                        ControllerActivity.openThis(weakObject.activity(), "main/", value);
+                        weakObject.activity().finish();
                     }
                 }
             }
         },app, Observer.PRIORITY_NORMAL,false);
-
-
         app.run();
     }
 
-    @Override
-    public void onBackPressed() {
-        if (fmg.getBackStackEntryCount() > 1){
-            super.onBackPressed();
-            return;
-        }
-        finish();
-    }
 }
