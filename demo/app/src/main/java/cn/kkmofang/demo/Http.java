@@ -2,15 +2,19 @@ package cn.kkmofang.demo;
 
 import android.text.TextUtils;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import cn.kkmofang.app.ControlDialog;
 import cn.kkmofang.http.HttpOptions;
 import cn.kkmofang.http.IHttp;
 import cn.kkmofang.http.IHttpTask;
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.FormBody;
 import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -38,11 +42,21 @@ public class Http implements IHttp {
                 .build();
 
         String url = options.absoluteUrl();
-        MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
-        String content = "";
+//        MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
+//        String content = "";
+        FormBody.Builder builder = new FormBody.Builder();
+
         if (HttpOptions.METHOD_POST.equals(method)){
-            // TODO: 2018/3/30 获取json content
+            if (options.data != null && options.data instanceof Map){
+                Map<String, Object> map = (Map<String, Object>) options.data;
+                for(Map.Entry entry:map.entrySet()){
+                    builder.add((String) entry.getKey(), entry.getValue().toString());
+                }
+//                JSONObject jb = new JSONObject(map);
+//                content = jb.toString();
+            }
         }
+//        System.out.println("Http post content:"+ content);
 
 
         Headers.Builder headerBuilders = new Headers.Builder();
@@ -51,22 +65,28 @@ public class Http implements IHttp {
                 headerBuilders.add(entry.getKey(), (String) entry.getValue());
             }
         }
+        //此处先用一个默认的调试
+        headerBuilders.add("User-Agent","Mozilla/5.0 (iPhone; CPU iPhone OS 11_2_6 like Mac OS X) AppleWebKit/604.5.6 (KHTML, like Gecko) Mobile/15D100");
+
 
         final Request request = new Request.Builder()
                 .url(url)
-                .method(method, RequestBody.create(mediaType, content))
+                .method(method, builder.build())
                 .headers(headerBuilders.build())
                 .build();
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                options.onfail.on(e, weakObject);
+//                options.onfail.on(e, weakObject);
+                System.out.println("Http onFailure:" + e.getMessage());
+                e.printStackTrace();
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                String string = response.body().string();
-                System.out.println("onResponse:" + string);
+//                Map<>
+//                String string = response.body().string();
+//                System.out.println("Http onResponse:" + string);
 //                Headers headers = response.networkResponse().request().headers();
 //                int code = response.code();
                 //options.onresponse.on(code, "",headers, weakObject);

@@ -65,7 +65,7 @@ public class ControllerActivity extends FragmentActivity {
     }
 
     public void runPage(){
-        Application app = new Application(this,new AssetResource(getAssets(),mBasePath),null
+        Application app = new Application(this,new AssetResource(getAssets(),mBasePath),new Http()
                 ,new AssetViewContext(getApplicationContext(),getAssets(),mBasePath));
 
         app.observer().on(new String[]{"action", "open"}, new Listener<Application>() {
