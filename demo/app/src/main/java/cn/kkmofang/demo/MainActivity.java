@@ -22,28 +22,19 @@ import cn.kkmofang.observer.Observer;
 import cn.kkmofang.script.ScriptContext;
 import cn.kkmofang.view.value.Pixel;
 
+import static cn.kkmofang.demo.ControllerActivity.DEFAULT_SIZE;
+
 public class MainActivity extends FragmentActivity {
-
-
-    private FragmentManager fmg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
         setContentView(R.layout.activity_main);
+        initUnit();
 
-
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getRealMetrics(dm);
-
-        Pixel.UnitRPX = Math.min(dm.widthPixels,dm.heightPixels) / 750.0f;
-        Pixel.UnitPX = dm.density;
-
-        fmg = getSupportFragmentManager();
-
-
-        Application app = new Application(this,new AssetResource(getAssets(),"main/"),null
+        Application app = new Application(this,new AssetResource(getAssets(),"main/"),new Http()
                 ,new AssetViewContext(getApplicationContext(),getAssets(),"main/"));
 
         app.observer().on(new String[]{"action", "open"}, new Listener<Application>() {
@@ -54,27 +45,27 @@ public class MainActivity extends FragmentActivity {
                     if ("window".equals(controller.getType())){
                         new ControlDialog.Builder(weakObject.activity()).runView(controller);
                     }else {
+//                        ControllerActivity.openThis(weakObject.activity(), "main/", value);
+//                        weakObject.activity().finish();
                         ControllerFragment fragment = new ControllerFragment();
                         fragment.setController(controller);
-                        FragmentTransaction ft = fmg.beginTransaction();
+                        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                         ft.add(R.id.contentView, fragment);
-                        ft.addToBackStack(null);
                         ft.commit();
                     }
                 }
             }
         },app, Observer.PRIORITY_NORMAL,false);
-
-
         app.run();
     }
 
-    @Override
-    public void onBackPressed() {
-        if (fmg.getBackStackEntryCount() > 1){
-            super.onBackPressed();
-            return;
-        }
-        finish();
+    public void initUnit(){
+        if (Pixel.UnitRPX != 1.0f || Pixel.UnitPX != 1.0f)return;
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+
+        Pixel.UnitRPX = Math.min(metrics.widthPixels,metrics.heightPixels) / DEFAULT_SIZE;
+        Pixel.UnitPX = metrics.density;
     }
+
 }
