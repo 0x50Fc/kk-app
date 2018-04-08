@@ -1,6 +1,7 @@
 package cn.kkmofang.app;
 
 import android.app.Activity;
+import android.graphics.Point;
 import android.os.Handler;
 import android.util.Log;
 

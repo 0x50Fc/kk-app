@@ -29,4 +29,6 @@ dependencies {
     compile files('src/main/libs/glide-3.6.0.jar')
     compile files('src/main/libs/ninepatch-1.0.jar')
     compile project(':kk-app')
+    compile 'com.squareup.okhttp3:okhttp:3.2.0'
+
 }

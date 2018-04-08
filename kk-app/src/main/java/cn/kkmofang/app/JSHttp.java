@@ -43,6 +43,11 @@ public class JSHttp implements IScriptObject{
             Heapptr onresponse = null;
             Heapptr onprocess = null;
 
+            /**
+             * {
+             *
+             * }
+             */
             if(top >0 && ctx.isObject(-top)) {
 
                 ctx.dup(-top);
