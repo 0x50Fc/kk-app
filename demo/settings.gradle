@@ -1,1 +1,1 @@
-include ':app', ':kk-app', ':kk-view', ':kk-script', ':kk-duktape', ':kk-observer', ':kk-http'
+include ':app', ':kk-app', ':kk-view', ':kk-script', ':kk-duktape', ':kk-observer', ':kk-http', ':kk-http-client'

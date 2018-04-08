@@ -16,6 +16,7 @@ import cn.kkmofang.app.AssetResource;
 import cn.kkmofang.app.ControlDialog;
 import cn.kkmofang.app.Controller;
 import cn.kkmofang.app.ControllerFragment;
+import cn.kkmofang.http.client.HttpClient;
 import cn.kkmofang.observer.IObserver;
 import cn.kkmofang.observer.Listener;
 import cn.kkmofang.observer.Observer;
@@ -34,7 +35,8 @@ public class MainActivity extends FragmentActivity {
         setContentView(R.layout.activity_main);
         initUnit();
 
-        Application app = new Application(this,new AssetResource(getAssets(),"main/"),new Http()
+        Application app = new Application(this,new AssetResource(getAssets(),"main/")
+                ,new HttpClient(getApplicationContext(),30,30,30)
                 ,new AssetViewContext(getApplicationContext(),getAssets(),"main/"));
 
         app.observer().on(new String[]{"action", "open"}, new Listener<Application>() {

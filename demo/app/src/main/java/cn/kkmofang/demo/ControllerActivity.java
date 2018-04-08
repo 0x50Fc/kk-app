@@ -17,6 +17,7 @@ import cn.kkmofang.app.AssetResource;
 import cn.kkmofang.app.ControlDialog;
 import cn.kkmofang.app.Controller;
 import cn.kkmofang.app.ControllerFragment;
+import cn.kkmofang.http.client.HttpClient;
 import cn.kkmofang.observer.IObserver;
 import cn.kkmofang.observer.Listener;
 import cn.kkmofang.observer.Observer;
@@ -65,7 +66,7 @@ public class ControllerActivity extends FragmentActivity {
     }
 
     public void runPage(){
-        Application app = new Application(this,new AssetResource(getAssets(),mBasePath),new Http()
+        Application app = new Application(this,new AssetResource(getAssets(),mBasePath),new HttpClient(getApplicationContext(),30,30,30)
                 ,new AssetViewContext(getApplicationContext(),getAssets(),mBasePath));
 
         app.observer().on(new String[]{"action", "open"}, new Listener<Application>() {
