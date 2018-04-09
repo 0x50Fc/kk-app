@@ -28,13 +28,7 @@ public class AssetResource implements IResource{
     public String getString(String name) {
 
         try {
-            String path;
-            if(name.startsWith("./")) {
-                path = _basePath + name.substring(2);
-            } else {
-                path = _basePath + name;
-            }
-            InputStream in = _asset.open(path);
+            InputStream in = open(name);
             try {
                 return FileResource.getString(in);
             }
@@ -47,5 +41,15 @@ public class AssetResource implements IResource{
         return null;
     }
 
+    @Override
+    public InputStream open(String name) throws IOException {
+        String path;
+        if(name.startsWith("./")) {
+            path = _basePath + name.substring(2);
+        } else {
+            path = _basePath + name;
+        }
+        return _asset.open(path);
+    }
 
 }

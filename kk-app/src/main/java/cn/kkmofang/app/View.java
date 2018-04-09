@@ -17,17 +17,8 @@ import cn.kkmofang.observer.Observer;
 import cn.kkmofang.script.IScriptFunction;
 import cn.kkmofang.script.IScriptObject;
 import cn.kkmofang.script.ScriptContext;
-import cn.kkmofang.view.BodyElement;
-import cn.kkmofang.view.ButtonElement;
-import cn.kkmofang.view.Element;
-import cn.kkmofang.view.ImageElement;
-import cn.kkmofang.view.ImgElement;
-import cn.kkmofang.view.PagerElement;
-import cn.kkmofang.view.ScrollElement;
-import cn.kkmofang.view.SpanElement;
-import cn.kkmofang.view.SwitchElement;
-import cn.kkmofang.view.TextElement;
-import cn.kkmofang.view.ViewElement;
+import cn.kkmofang.view.*;
+import cn.kkmofang.view.ViewContext;
 import cn.kkmofang.view.event.Event;
 import cn.kkmofang.view.event.EventFunction;
 
@@ -232,10 +223,12 @@ public class View {
         final List<IObserver> observers = new ArrayList<>();
         final String[] indexKeys = new String[]{index};
         final String[] itemKeys = new String[]{item};
-
+        final IViewContext viewContext = cn.kkmofang.view.ViewContext.current();
         Listener<Object> reloadData = new Listener<Object>() {
             @Override
             public void onChanged(IObserver observer, String[] changedKeys, Object value, Object weakObject) {
+
+                ViewContext.push(viewContext);
 
                 final Element ee = be.get();
 
@@ -322,6 +315,8 @@ public class View {
                     elements.remove(i);
                     observers.remove(i);
                 }
+
+                ViewContext.pop();
 
             }
         };

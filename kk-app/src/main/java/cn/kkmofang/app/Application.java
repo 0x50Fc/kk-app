@@ -31,39 +31,41 @@ public class Application {
     public final static double Kernel = 1.0;
 
     private final IObserver _observer;
-    private final Context _context;
+    private final JSObserver _jsObserver;
+    private final Context _jsContext;
     private final IResource _resource;
-    private final Activity _activity;
+    private final android.content.Context _context;
     private final IHttp _http;
     private final IViewContext _viewContext;
 
-    public Application(Activity activity,IResource resource,IHttp http,IViewContext viewContext) {
-        _context = new Context();
-        _observer = new Observer(_context);
+    public Application(android.content.Context context,IResource resource,IHttp http,IViewContext viewContext) {
+        _jsContext = new Context();
+        _observer = new Observer(_jsContext);
+        _jsObserver = new JSObserver(_observer);
         _resource = resource;
-        _activity = activity;
+        _context = context;
         _http = http;
         _viewContext = viewContext;
 
         final WeakReference<Application> app = new WeakReference<Application>(this);
 
-        ScriptContext.pushContext(_context);
+        ScriptContext.pushContext(_jsContext);
 
-        _context.pushGlobalObject();
+        _jsContext.pushGlobalObject();
 
-        _context.push("kk");
-        _context.pushObject();
+        _jsContext.push("kk");
+        _jsContext.pushObject();
 
-        _context.push("kernel");
-        _context.push(Kernel);
-        _context.putProp(-3);
+        _jsContext.push("kernel");
+        _jsContext.push(Kernel);
+        _jsContext.putProp(-3);
 
-        _context.push("platform");
-        _context.push("android");
-        _context.putProp(-3);
+        _jsContext.push("platform");
+        _jsContext.push("android");
+        _jsContext.putProp(-3);
 
-        _context.push("getString");
-        _context.pushFunction(new IScriptFunction() {
+        _jsContext.push("getString");
+        _jsContext.pushFunction(new IScriptFunction() {
             @Override
             public int call() {
 
@@ -92,21 +94,21 @@ public class Application {
                 return 0;
             }
         });
-        _context.putProp(-3);
+        _jsContext.putProp(-3);
 
 
-        _context.putProp(-3);
+        _jsContext.putProp(-3);
 
 
-        _context.push("View");
-        _context.pushFunction(View.Func);
-        _context.putProp(-3);
+        _jsContext.push("View");
+        _jsContext.pushFunction(View.Func);
+        _jsContext.putProp(-3);
 
-        _context.pop();
+        _jsContext.pop();
 
         {
             String code = null;
-            InputStream in = _activity.getResources().openRawResource(R.raw.require);
+            InputStream in = _context.getResources().openRawResource(R.raw.require);
             try {
                 code = FileResource.getString(in);
             }
@@ -178,39 +180,43 @@ public class Application {
     }
 
 
-    public Context context() {
-        return _context;
+    public Context jsContext() {
+        return _jsContext;
     }
 
     public IObserver observer() {
         return _observer;
     }
 
+    public JSObserver jsObserver() {
+        return _jsObserver;
+    }
+
     public IResource resource() {
         return _resource;
     }
 
-    public Activity activity() {
-        return _activity;
+    public android.content.Context context() {
+        return _context;
     }
 
     public IViewContext viewContext() {
         return _viewContext;
     }
 
+    public IHttp http() {
+        return _http;
+    }
+
     public void execCode(String code,Map<String,Object> librarys) {
         ViewContext.push(_viewContext);
-        ScriptContext.pushContext(context());
+        ScriptContext.pushContext(_jsContext);
 
         if(librarys == null) {
             librarys = new TreeMap<String,Object>();
         }
 
-        librarys.put("app",new JSObserver(_observer));
-
-        if(_http != null) {
-            librarys.put("http",new JSHttp(_http));
-        }
+        librarys.put("app",_jsObserver);
 
         List<Object> arguments = new ArrayList<>();
 
@@ -228,23 +234,23 @@ public class Application {
 
         execCode.append("){").append(code).append("})");
 
-        _context.eval(execCode.toString());
+        _jsContext.eval(execCode.toString());
 
-        if(_context.isFunction(-1)) {
+        if(_jsContext.isFunction(-1)) {
 
             for(Object v : arguments) {
-                _context.pushValue(v);
+                _jsContext.pushValue(v);
             }
 
-            if(_context.pcall(arguments.size()) != cn.kkmofang.duktape.Context.DUK_EXEC_SUCCESS) {
-                String v = _context.getErrorString(-1);
+            if(_jsContext.pcall(arguments.size()) != cn.kkmofang.duktape.Context.DUK_EXEC_SUCCESS) {
+                String v = _jsContext.getErrorString(-1);
                 Log.d(Context.TAG,v);
             }
 
-            _context.pop();
+            _jsContext.pop();
 
         } else {
-            _context.pop();
+            _jsContext.pop();
         }
 
 
@@ -269,29 +275,31 @@ public class Application {
         Element root = new Element();
 
         ViewContext.push(_viewContext);
+        ScriptContext.pushContext(_jsContext);
 
         String code = _resource.getString(path);
 
         if(code != null) {
             StringBuffer sb = new StringBuffer();
             sb.append("(function(element,data){").append(code).append("})");
-            _context.eval(sb.toString());
-            if(_context.isFunction(-1)) {
+            _jsContext.eval(sb.toString());
+            if(_jsContext.isFunction(-1)) {
 
-                _context.pushValue(root);
-                _context.pushValue(data);
+                _jsContext.pushValue(root);
+                _jsContext.pushValue(data);
 
-                if(_context.pcall(2) != cn.kkmofang.duktape.Context.DUK_EXEC_SUCCESS) {
-                    Log.d(Context.TAG,_context.getErrorString(-1));
+                if(_jsContext.pcall(2) != cn.kkmofang.duktape.Context.DUK_EXEC_SUCCESS) {
+                    Log.d(Context.TAG,_jsContext.getErrorString(-1));
                 }
 
-                _context.pop();
+                _jsContext.pop();
 
             } else {
-                _context.pop();
+                _jsContext.pop();
             }
         }
 
+        ScriptContext.popContext();
         ViewContext.pop();
 
         return root.lastChild();
@@ -301,7 +309,7 @@ public class Application {
 
         final WeakReference<Application> app = new WeakReference<Application>(this);
 
-        _context.post(new Runnable() {
+        _jsContext.post(new Runnable() {
             @Override
             public void run() {
                 Application v = app.get();

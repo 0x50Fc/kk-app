@@ -50,6 +50,8 @@ public class ControlDialog extends Dialog {
                     }
                 }
             });
+
+
         }
 
         public ControlDialog create(){

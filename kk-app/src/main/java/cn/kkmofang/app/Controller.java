@@ -17,9 +17,10 @@ public class Controller {
 
     private Application _application;
     private IObserver _page;
+    private JSObserver _jsPage;
     private Map<String,Object> _query;
     private String _path;
-    private String _type;
+    private JSHttp _http;
 
     public Application application() {
         return _application;
@@ -31,9 +32,16 @@ public class Controller {
 
     public IObserver page() {
         if(_page == null && _application != null) {
-            _page = new Observer(_application.context());
+            _page = new Observer(_application.jsContext());
         }
         return _page;
+    }
+
+    public JSObserver jsPage() {
+        if(_jsPage == null) {
+            _jsPage = new JSObserver(page());
+        }
+        return _jsPage;
     }
 
     public Map<String,Object> query() {
@@ -43,20 +51,22 @@ public class Controller {
         return _query;
     }
 
+    public JSHttp http() {
+        if(_http == null) {
+            Application app = application();
+            if(app != null) {
+                _http = new JSHttp(app.http());
+            }
+        }
+        return _http;
+    }
+
     public void setQuery(Map<String,Object> query) {
         _query = query;
     }
 
     public String path() {
         return _path;
-    }
-
-    public String getType() {
-        return _type;
-    }
-
-    public void setType(String _type) {
-        this._type = _type;
     }
 
     public void setPath(String path) {
@@ -69,9 +79,10 @@ public class Controller {
 
             Map<String,Object> libs = new TreeMap<>();
 
-            libs.put("page",new JSObserver(page()));
+            libs.put("page",jsPage());
             libs.put("query",query());
             libs.put("path",path());
+            libs.put("http",http());
 
             _application.exec(_path + ".js",libs);
 
@@ -109,12 +120,17 @@ public class Controller {
     public void recycle() {
         if(_page != null) {
             _page.off(new String[]{},null,null);
+            _page = null;
         }
+        if(_http != null) {
+            _http.cancel();
+            _http = null;
+        }
+        _jsPage = null;
     }
 
     public void setAction(Object action) {
         setPath(ScriptContext.stringValue(ScriptContext.get(action,"path"),null));
-        setType(ScriptContext.stringValue(ScriptContext.get(action, "type"), null));
         {
             Object v = ScriptContext.get(action,"query");
             if(v instanceof Map) {

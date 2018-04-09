@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import cn.kkmofang.duktape.Heapptr;
 import cn.kkmofang.script.IScriptFunction;
 import cn.kkmofang.script.IScriptObject;
+import cn.kkmofang.script.ScriptContext;
 import cn.kkmofang.view.ViewContext;
 
 /**
@@ -38,7 +39,7 @@ public class Context extends cn.kkmofang.duktape.Context implements cn.kkmofang.
             while(matcher.find()) {
                 String name = matcher.group();
                 if(name.length() >0 && !name.startsWith("_")) {
-                    keys.add(name.split("."));
+                    keys.add(name.split("\\."));
                 }
             }
 
@@ -80,6 +81,10 @@ public class Context extends cn.kkmofang.duktape.Context implements cn.kkmofang.
     @Override
     public Object execEvaluate(Object func, Object object) {
 
+        Object r = null;
+
+        ScriptContext.pushContext(this);
+
         pushValue(func);
 
         if(isFunction(-1)) {
@@ -91,14 +96,15 @@ public class Context extends cn.kkmofang.duktape.Context implements cn.kkmofang.
                 Log.d(TAG,v);
                 pop();
             } else {
-                Object v = toValue(-1);
+                r = toValue(-1);
                 pop();
-                return v;
             }
         } else {
             pop();
         }
 
-        return null;
+        ScriptContext.popContext();
+
+        return r;
     }
 }

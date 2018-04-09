@@ -71,4 +71,9 @@ public class FileResource implements IResource{
         return null;
     }
 
+    @Override
+    public InputStream open(String name) throws IOException {
+        return new FileInputStream(new File(_basePath,name));
+    }
+
 }

@@ -18,11 +18,13 @@ import com.bumptech.glide.request.target.SimpleTarget;
 import java.io.IOException;
 import java.io.InputStream;
 
+import cn.kkmofang.app.IResource;
 import cn.kkmofang.script.ScriptContext;
 import cn.kkmofang.view.IViewContext;
 import cn.kkmofang.view.ImageCallback;
 import cn.kkmofang.view.ImageStyle;
 import cn.kkmofang.view.ImageTask;
+import cn.kkmofang.view.value.Pixel;
 import ua.anatolii.graphics.ninepatch.Div;
 import ua.anatolii.graphics.ninepatch.NinePatchChunk;
 
@@ -30,23 +32,14 @@ import ua.anatolii.graphics.ninepatch.NinePatchChunk;
  * Created by hailong11 on 2018/3/21.
  */
 
-public class AssetViewContext implements IViewContext {
+public class ViewContext extends cn.kkmofang.app.ViewContext {
 
-    private final Context _context;
-    private final AssetManager _asset;
-    private final String _basePath;
+
     //支持的图片格式
     private static final String[] extArray = {".png", ".jpg", "bmp", ".gif", ".webp"};
 
-    public AssetViewContext(Context context,AssetManager asset,String basePath) {
-        _context = context;
-        _asset = asset;
-        _basePath = basePath;
-    }
-
-    @Override
-    public Context getContext() {
-        return _context;
+    public ViewContext(Context context, IResource resource) {
+        super(context, resource);
     }
 
     @Override
@@ -81,8 +74,7 @@ public class AssetViewContext implements IViewContext {
 
         String[] vs = url.split(" ");
 
-
-        String path = _basePath + vs[0];
+        String path = vs[0];
 
         if(vs.length > 1) {
             style.capLeft = (int) (ScriptContext.intValue(vs[1],0));
@@ -114,32 +106,31 @@ public class AssetViewContext implements IViewContext {
 
                 try {
 
-                    InputStream in = _asset.open(name);
+                    InputStream in = _resource.open(name);
 
                     try {
 
                         BitmapFactory.Options opt = new BitmapFactory.Options();
-                        opt.inJustDecodeBounds = true;
-                        BitmapFactory.decodeStream(in, null, opt);
-                        int inSampleSize = 1;
-                        if (style.height > 0 && style.width > 0){
-                            inSampleSize = calcuteInsampleSize(opt, style.width, style.height);
-                        }
-                        opt.inSampleSize = inSampleSize;
-                        opt.inJustDecodeBounds = false;
 
-                        in = _asset.open(name);
+                        opt.inJustDecodeBounds = false;
+                        opt.inDensity = scale;
+
                         Bitmap bitmap = BitmapFactory.decodeStream(in,null,opt);
 
                         if(style.capLeft >0 || style.capTop > 0) {
 
-                            int capLeft = Math.round(style.capLeft * scale / inSampleSize);
-                            int capTop = Math.round(style.capTop * scale / inSampleSize);
+                            int capLeft = Math.round(style.capLeft * scale  );
+                            int capTop = Math.round(style.capTop * scale );
 
                             NinePatchChunk chunk = NinePatchChunk.createEmptyChunk();
 
-                            chunk.xDivs.add(new Div(capLeft  ,capLeft + 1));
-                            chunk.yDivs.add(new Div(capTop , capTop  + 1));
+                            if(capLeft > 0) {
+                                chunk.xDivs.add(new Div(capLeft, capLeft + scale));
+                            }
+
+                            if(capTop > 0) {
+                                chunk.yDivs.add(new Div(capTop, capTop + scale));
+                            }
 
                             return new NinePatchDrawable(Resources.getSystem(),
                                     bitmap, chunk.toBytes(), chunk.padding, name);
@@ -163,17 +154,4 @@ public class AssetViewContext implements IViewContext {
         return null;
     }
 
-    public int calcuteInsampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight){
-        int height = options.outHeight;
-        int width = options.outWidth;
-        int inSampleSize = 1;
-        if (height > reqHeight || width > reqWidth){
-            int halfWidth = width / 2;
-            int halfHeight = height / 2;
-            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth){
-                inSampleSize *= 2;
-            }
-        }
-        return inSampleSize;
-    }
 }

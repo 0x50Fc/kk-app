@@ -311,4 +311,11 @@ public class JSHttp implements IScriptObject{
         }
         super.finalize();
     }
+
+    public void cancel() {
+        IHttp v = _http.get();
+        if(v != null) {
+            v.cancel(this);
+        }
+    }
 }

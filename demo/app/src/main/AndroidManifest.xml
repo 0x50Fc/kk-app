@@ -24,7 +24,7 @@
         </activity>
         <activity
             android:theme="@android:style/Theme.Light.NoTitleBar.Fullscreen"
-            android:name=".ControllerActivity" />
+            android:name="cn.kkmofang.app.ActivityController" />
     </application>
 
 </manifest>

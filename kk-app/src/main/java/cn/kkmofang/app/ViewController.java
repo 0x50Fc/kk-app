@@ -26,6 +26,7 @@ public class ViewController extends Controller {
     public void recycle() {
         if(_element != null) {
             _element.recycleView();
+            _element = null;
         }
         super.recycle();
     }
