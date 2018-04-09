@@ -29,7 +29,9 @@ import cn.kkmofang.view.ViewContext;
 public class Application {
 
     public final static double Kernel = 1.0;
+    private static long _autoId = 0;
 
+    private final long _id;
     private final IObserver _observer;
     private final JSObserver _jsObserver;
     private final Context _jsContext;
@@ -46,6 +48,9 @@ public class Application {
         _context = context;
         _http = http;
         _viewContext = viewContext;
+        _id = ++ _autoId;
+
+        _applications.put(_id,new WeakReference<Application>(this));
 
         final WeakReference<Application> app = new WeakReference<Application>(this);
 
@@ -129,6 +134,9 @@ public class Application {
     }
 
 
+    public long id() {
+        return _id;
+    }
 
     public Controller open(Object action) {
 
@@ -322,5 +330,17 @@ public class Application {
         });
     }
 
+    private final static Map<Long,WeakReference<Application>> _applications = new TreeMap<>();
 
+    public final static Application get(long id) {
+        if(_applications.containsKey(id)) {
+            WeakReference<Application> v = _applications.get(id);
+            Application app = v.get();
+            if(app == null) {
+                _applications.remove(id);
+            }
+            return app;
+        }
+        return null;
+    }
 }

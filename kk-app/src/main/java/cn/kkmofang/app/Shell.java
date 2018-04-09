@@ -3,11 +3,8 @@ package cn.kkmofang.app;
 import android.app.Activity;
 import android.content.Intent;
 import android.util.DisplayMetrics;
+import java.io.Serializable;
 import java.lang.ref.WeakReference;
-import java.util.Map;
-import java.util.Stack;
-import java.util.TreeMap;
-
 import cn.kkmofang.http.IHttp;
 import cn.kkmofang.observer.IObserver;
 import cn.kkmofang.observer.Listener;
@@ -89,11 +86,17 @@ public abstract class Shell {
 
         Activity root = rootActivity();
 
-        if(root != null) {
-            long id = pushOpenController(controller);
-            Intent i = new Intent(_context,ActivityController.class);
-            i.putExtra("id",id);
-            root.startActivity(i);
+        if(root != null && action instanceof Serializable) {
+            String target = ScriptContext.stringValue(ScriptContext.get(action,"target"),null);
+            if(root instanceof Container
+                    && (! ((Container) root).isOpened()|| "root".equals(target) )) {
+                ((Container) root).open(app,action);
+            } else {
+                Intent i = new Intent(_context, ActivityContainer.class);
+                i.putExtra("appid", app.id());
+                i.putExtra("action", (Serializable) action);
+                root.startActivity(i);
+            }
         }
     }
 
@@ -145,40 +148,6 @@ public abstract class Shell {
 
     }
 
-    private final static ThreadLocal<Long> _autoId = new ThreadLocal<Long>();
-    private final static ThreadLocal<Map<Long,Controller>> _controllers = new ThreadLocal<>();
-
-    public final static long pushOpenController(Controller controller) {
-
-        Long id = _autoId.get();
-
-        if(id == null) {
-            id = 1L;
-        } else {
-            id = id + 1;
-        }
-
-        _autoId.set(id);
-
-        Map<Long,Controller> v = _controllers.get();
-
-        if (v == null) {
-            v = new TreeMap<>();
-            _controllers.set(v);
-        }
-
-        v.put(id,controller);
-
-        return id;
-    }
-
-    public final static Controller popOpenController(long id) {
-        Map<Long,Controller> v = _controllers.get();
-        if (v != null && v.containsKey(id)) {
-            return v.remove(id);
-        }
-        return null;
-    }
 
     private static Shell _main;
 
@@ -189,6 +158,5 @@ public abstract class Shell {
     public final static Shell main() {
         return _main;
     }
-
 
 }
