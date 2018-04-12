@@ -1,10 +1,10 @@
 package cn.kkmofang.demo;
 
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
@@ -19,14 +19,11 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import cn.kkmofang.app.IResource;
+import cn.kkmofang.app.NinePatchChunkUtil;
 import cn.kkmofang.script.ScriptContext;
-import cn.kkmofang.view.IViewContext;
 import cn.kkmofang.view.ImageCallback;
 import cn.kkmofang.view.ImageStyle;
 import cn.kkmofang.view.ImageTask;
-import cn.kkmofang.view.value.Pixel;
-import ua.anatolii.graphics.ninepatch.Div;
-import ua.anatolii.graphics.ninepatch.NinePatchChunk;
 
 /**
  * Created by hailong11 on 2018/3/21.
@@ -122,18 +119,10 @@ public class ViewContext extends cn.kkmofang.app.ViewContext {
                             int capLeft = Math.round(style.capLeft * scale  );
                             int capTop = Math.round(style.capTop * scale );
 
-                            NinePatchChunk chunk = NinePatchChunk.createEmptyChunk();
-
-                            if(capLeft > 0) {
-                                chunk.xDivs.add(new Div(capLeft, capLeft + scale));
-                            }
-
-                            if(capTop > 0) {
-                                chunk.yDivs.add(new Div(capTop, capTop + scale));
-                            }
+                            byte[] chunk = NinePatchChunkUtil.getChunk(capLeft, capTop, scale);
 
                             return new NinePatchDrawable(Resources.getSystem(),
-                                    bitmap, chunk.toBytes(), chunk.padding, name);
+                                    bitmap, chunk, new Rect(), name);
 
                         } else {
                             return new BitmapDrawable(_context.getResources(),bitmap);
