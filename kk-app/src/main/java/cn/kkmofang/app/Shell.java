@@ -78,7 +78,7 @@ public abstract class Shell {
     }
 
     protected void openWindow(Application app, Controller controller,Object action) {
-        WindowController v = new WindowController(_context,controller);
+        WindowController v = new WindowController(rootActivity(),controller);
         v.show();
     }
 

@@ -34,4 +34,5 @@ dependencies {
     compile project(':kk-duktape')
     compile project(':kk-observer')
     compile project(':kk-http')
+    compile project(':kk-image')
 }

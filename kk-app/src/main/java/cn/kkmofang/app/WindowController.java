@@ -69,18 +69,6 @@ public class WindowController extends Dialog {
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
 
-        Window window = getWindow();
-
-        if(window != null) {
-            WindowManager.LayoutParams params = window.getAttributes();
-            Point size = new Point();
-            window.getWindowManager().getDefaultDisplay().getSize(size);
-            params.width = size.x;
-            params.height = size.y;
-            window.setAttributes(params);
-        }
-
-
     }
 
     @Override

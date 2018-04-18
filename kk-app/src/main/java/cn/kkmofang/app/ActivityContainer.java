@@ -1,6 +1,7 @@
 package cn.kkmofang.app;
 
 import android.app.Activity;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 
 import java.io.Serializable;
@@ -138,6 +139,21 @@ public class ActivityContainer extends Activity implements Container {
 
                     if(weakObject != null && value != null) {
                         weakObject.finish();
+                    }
+                }
+            },this, Observer.PRIORITY_NORMAL,false);
+
+            _controller.page().on(new String[]{"page", "orientation"}, new Listener<ActivityContainer>() {
+                @Override
+                public void onChanged(IObserver observer, String[] changedKeys, Object value, ActivityContainer weakObject) {
+
+                    if(weakObject != null && value != null) {
+                        if("landscape".equals(value)) {
+                            weakObject.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                        } else {
+                            weakObject.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                        }
+
                     }
                 }
             },this, Observer.PRIORITY_NORMAL,false);

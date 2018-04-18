@@ -2,7 +2,6 @@ package cn.kkmofang.demo;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -24,7 +23,7 @@ public class MainActivity extends ActivityContainer {
 
         final Context context = getApplicationContext();
 
-        Shell.setMain(new Shell(context,new HttpClient(context,30,30,30)) {
+        Shell.setMain(new Shell(context,new Http(context)) {
             @Override
             protected IViewContext openViewContext(IResource resource, String path) {
                 return new ViewContext(context,new BasePathResource(resource,path));

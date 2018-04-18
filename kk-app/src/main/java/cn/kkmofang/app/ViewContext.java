@@ -2,9 +2,9 @@ package cn.kkmofang.app;
 
 import android.graphics.drawable.Drawable;
 
+import cn.kkmofang.image.ImageStyle;
 import cn.kkmofang.view.IViewContext;
 import cn.kkmofang.view.ImageCallback;
-import cn.kkmofang.view.ImageStyle;
 import cn.kkmofang.view.ImageTask;
 
 /**
