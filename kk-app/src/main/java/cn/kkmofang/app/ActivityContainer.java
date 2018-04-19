@@ -24,6 +24,7 @@ public class ActivityContainer extends Activity implements Container {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.kk_document);
 
         _documentView = (DocumentView) findViewById(R.id.kk_documentView);

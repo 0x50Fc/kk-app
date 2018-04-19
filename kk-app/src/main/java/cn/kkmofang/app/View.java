@@ -1,7 +1,6 @@
 package cn.kkmofang.app;
 
 import android.util.Log;
-import android.widget.Button;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
@@ -21,6 +20,7 @@ import cn.kkmofang.view.*;
 import cn.kkmofang.view.ViewContext;
 import cn.kkmofang.view.event.Event;
 import cn.kkmofang.view.event.EventFunction;
+import cn.kkmofang.view.PagerElement;
 
 /**
  * Created by zhanghailong on 2018/3/13.
@@ -70,11 +70,8 @@ public class View {
         if(name != null && _elements.containsKey(name)) {
             clazz = _elements.get(name);
         }
-        System.out.println("newElement:" + name);
+
         try {
-            if ("scroll".equals(name)){
-                return new ScrollElement();
-            }
             return (Element) clazz.newInstance();
         } catch (Throwable e) {
             Log.d(Context.TAG,Log.getStackTraceString(e));
@@ -127,9 +124,7 @@ public class View {
                     data.on(v, new Listener<Object>() {
                         @Override
                         public void onChanged(IObserver observer, String[] changedKeys, Object value, Object weakObject) {
-                            if(value != null) {
-                                e.set("#text",ScriptContext.booleanValue(value,false) ? "false" : "true");
-                            }
+                            e.set("hidden",ScriptContext.booleanValue(value,false) ? "false" : "true");
                         }
 
                     },null,Observer.PRIORITY_DESC);
@@ -138,9 +133,7 @@ public class View {
                     data.on(v, new Listener<Object>() {
                         @Override
                         public void onChanged(IObserver observer, String[] changedKeys, Object value, Object weakObject) {
-                            if(value != null) {
-                                e.set("#text",ScriptContext.booleanValue(value,false) ? "true" : "false");
-                            }
+                            e.set("hidden",ScriptContext.booleanValue(value,false) ? "true" : "false");
                         }
 
                     },null,Observer.PRIORITY_DESC);
