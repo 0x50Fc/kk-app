@@ -1,8 +1,13 @@
 package cn.kkmofang.app;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.*;
+import android.content.Context;
 import android.graphics.Point;
+import android.support.annotation.NonNull;
+import android.support.annotation.StyleRes;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -20,9 +25,17 @@ import cn.kkmofang.view.DocumentView;
 public class WindowController extends Dialog {
 
     private final Controller _controller;
+    private Context _context;
 
-    public WindowController(android.content.Context context,Controller controller) {
-        super(context);
+    public WindowController(android.content.Context context, Controller controller) {
+        this(context, R.style.Dialog, controller);
+
+    }
+
+    public WindowController(@NonNull Context context, @StyleRes int themeResId, Controller controller) {
+        super(context, themeResId);
+
+        _context = context;
         _controller = controller;
         setContentView(R.layout.kk_document);
 
@@ -60,10 +73,15 @@ public class WindowController extends Dialog {
                     } else {
                         _controller.run();
                     }
+                    //此处由于onstart会先执行，导致网络不会执行，故加此代码
+                    _controller.willAppear();
+                    _controller.didAppear();
+
                 }
             });
         }
     }
+
 
     @Override
     public void onAttachedToWindow() {
@@ -104,6 +122,5 @@ public class WindowController extends Dialog {
 
         super.onStop();
     }
-
 
 }

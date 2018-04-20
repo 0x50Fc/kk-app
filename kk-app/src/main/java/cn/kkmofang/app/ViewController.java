@@ -53,7 +53,6 @@ public class ViewController extends Controller {
         run();
 
         documentView.setElement(_element);
-
         if( page != null){
 
             final Set<String> keySet = new TreeSet<>();

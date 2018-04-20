@@ -119,7 +119,7 @@ public class ViewContext extends cn.kkmofang.app.ViewContext {
                             int capLeft = Math.round(style.capLeft * scale  );
                             int capTop = Math.round(style.capTop * scale );
 
-                            byte[] chunk = NinePatchChunkUtil.getChunk(capLeft, capTop, scale);
+                            byte[] chunk = NinePatchChunkUtil.getChunk(capLeft, capTop, 1);
 
                             return new NinePatchDrawable(Resources.getSystem(),
                                     bitmap, chunk, new Rect(), name);

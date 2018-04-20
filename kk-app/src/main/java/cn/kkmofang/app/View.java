@@ -70,7 +70,6 @@ public class View {
         if(name != null && _elements.containsKey(name)) {
             clazz = _elements.get(name);
         }
-        System.out.println("newElement:" + name);
         try {
             if ("scroll".equals(name)){
                 return new ScrollElement();
@@ -213,11 +212,14 @@ public class View {
             }
         }
 
-        Element before = new Element();
 
-        parent.append(before);
+//        Element before = new Element();
+//
+//        parent.append(before);
 
-        final WeakReference<Element> be = new WeakReference<Element>(before);
+//        final WeakReference<Element> be = new WeakReference<Element>(before);
+
+        final WeakReference<Element> p = new WeakReference<Element>(parent);
 
         final List<Element> elements = new ArrayList<>();
         final List<IObserver> observers = new ArrayList<>();
@@ -230,7 +232,7 @@ public class View {
 
                 ViewContext.push(viewContext);
 
-                final Element ee = be.get();
+                final Element ee = p.get();
 
                 if(ee == null) {
                     return;
@@ -254,7 +256,7 @@ public class View {
                             if(func != null) {
                                 runFunc(func,e,obs);
                             }
-                            ee.before(e);
+                            ee.append(e);
                             elements.add(e);
                             observers.add(obs);
                             obs.setParent(data);

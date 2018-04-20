@@ -1,8 +1,10 @@
 package cn.kkmofang.demo;
 
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.widget.OrientationHelper;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -14,6 +16,7 @@ import cn.kkmofang.app.IResource;
 import cn.kkmofang.app.Shell;
 import cn.kkmofang.http.client.HttpClient;
 import cn.kkmofang.view.IViewContext;
+import cn.kkmofang.view.value.Orientation;
 
 
 public class MainActivity extends ActivityContainer {
@@ -22,9 +25,10 @@ public class MainActivity extends ActivityContainer {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
         final Context context = getApplicationContext();
 
-        Shell.setMain(new Shell(context,new HttpClient(context,30,30,30)) {
+        Shell.setMain(new Shell(this,new HttpClient(context,30,30,30)) {
             @Override
             protected IViewContext openViewContext(IResource resource, String path) {
                 return new ViewContext(context,new BasePathResource(resource,path));
@@ -46,6 +50,7 @@ public class MainActivity extends ActivityContainer {
 
         Shell.main().setRootActivity(this);
         Shell.main().open("asset://main/");
+
     }
 
 
