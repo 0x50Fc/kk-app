@@ -60,6 +60,8 @@ public class WindowController extends Dialog {
                     } else {
                         _controller.run();
                     }
+                    _controller.willAppear();
+                    _controller.didAppear();
                 }
             });
         }
