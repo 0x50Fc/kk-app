@@ -212,6 +212,9 @@ public class ActivityContainer extends Activity implements Container {
             _controller.application().post(new Runnable() {
                 @Override
                 public void run() {
+                    if(_controller == null) {
+                        return;
+                    }
                     if(_controller instanceof ViewController) {
                         ViewElement element = ((ViewController) _controller).run(documentView);
                         ActivityContainer vv = v.get();
