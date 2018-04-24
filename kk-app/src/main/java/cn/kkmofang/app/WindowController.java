@@ -2,7 +2,10 @@ package cn.kkmofang.app;
 
 import android.app.Dialog;
 import android.content.*;
-import android.graphics.Point;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -19,10 +22,11 @@ import cn.kkmofang.view.DocumentView;
 
 public class WindowController extends Dialog {
 
+    private DocumentView _documentView;
     private final Controller _controller;
 
     public WindowController(android.content.Context context,Controller controller) {
-        super(context);
+        super(context,R.style.Dialog);
         _controller = controller;
         setContentView(R.layout.kk_document);
 
@@ -49,28 +53,38 @@ public class WindowController extends Dialog {
             },this, Observer.PRIORITY_NORMAL,false);
         }
 
-        final DocumentView documentView = (DocumentView) findViewById(R.id.kk_documentView);
+        _documentView = (DocumentView) findViewById(R.id.kk_documentView);
 
         if(_controller != null) {
             _controller.application().post(new Runnable() {
                 @Override
                 public void run() {
                     if(_controller instanceof ViewController) {
-                        ((ViewController) _controller).run(documentView);
+                        ((ViewController) _controller).run(_documentView);
                     } else {
                         _controller.run();
                     }
-                    _controller.willAppear();
-                    _controller.didAppear();
+                    if(isShowing()) {
+                        _controller.willAppear();
+                        _controller.didAppear();
+                    }
                 }
             });
         }
+
     }
 
     @Override
-    public void onAttachedToWindow() {
-        super.onAttachedToWindow();
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
+        Window window = getWindow();
+
+        if(window != null){
+            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
+            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+        }
     }
 
     @Override

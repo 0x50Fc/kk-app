@@ -56,6 +56,9 @@ public class View {
         _elements.put("switch", SwitchElement.class);
         _elements.put("pager", PagerElement.class);
         _elements.put("scroll", ScrollElement.class);
+        _elements.put("topbar",TopbarElement.class);
+        _elements.put("input",InputElement.class);
+
     }
 
     public static void setElementClass(String name,Class<?> elementClass) {

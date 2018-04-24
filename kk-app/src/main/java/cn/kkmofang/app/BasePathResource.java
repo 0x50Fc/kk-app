@@ -22,6 +22,8 @@ public class BasePathResource implements IResource{
             return name;
         } else if(name.startsWith("./")) {
             return _basePath + name.substring(2);
+        } else if(!_basePath.endsWith("/")) {
+            return _basePath + "/" + name;
         }
         return _basePath + name;
     }

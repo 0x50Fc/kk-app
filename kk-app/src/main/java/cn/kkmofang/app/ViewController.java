@@ -32,7 +32,7 @@ public class ViewController extends Controller {
     }
 
 
-    public void run(DocumentView documentView) {
+    public ViewElement run(DocumentView documentView) {
 
         Application app = application();
         String path = path();
@@ -81,5 +81,7 @@ public class ViewController extends Controller {
                 }
             },documentView, Observer.PRIORITY_LOW,true);
         }
+
+        return _element;
     }
 }

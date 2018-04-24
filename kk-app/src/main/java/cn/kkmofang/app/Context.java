@@ -19,7 +19,7 @@ import cn.kkmofang.view.ViewContext;
 
 public class Context extends cn.kkmofang.duktape.Context implements cn.kkmofang.observer.IObserverContext{
 
-    public final static String TAG = "kk-app";
+    public final static String TAG = "kk";
 
     private static final Pattern pattern = Pattern.compile("[a-zA-Z][0-9a-zA-Z\\\\._]*");
 

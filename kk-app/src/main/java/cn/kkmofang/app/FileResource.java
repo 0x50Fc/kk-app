@@ -4,6 +4,7 @@ import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,6 +28,21 @@ public class FileResource implements IResource{
         _basePath = basePath;
     }
 
+    public static String getString(File file) {
+
+        try {
+            FileInputStream in = new FileInputStream(file);
+            try {
+                return getString(in);
+            }
+            finally {
+                in.close();
+            }
+        } catch (IOException e) {
+            Log.d(Context.TAG,Log.getStackTraceString(e));
+        }
+        return null;
+    }
     public static String getString(InputStream in) {
 
         if(in != null) {

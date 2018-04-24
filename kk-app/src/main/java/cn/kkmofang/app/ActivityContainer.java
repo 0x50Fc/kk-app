@@ -5,11 +5,15 @@ import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 
 import java.io.Serializable;
+import java.lang.ref.WeakReference;
 
 import cn.kkmofang.observer.IObserver;
 import cn.kkmofang.observer.Listener;
 import cn.kkmofang.observer.Observer;
+import cn.kkmofang.view.BodyElement;
 import cn.kkmofang.view.DocumentView;
+import cn.kkmofang.view.ViewElement;
+import cn.kkmofang.view.value.Pixel;
 
 /**
  * Created by zhanghailong on 2018/4/8.
@@ -19,15 +23,19 @@ public class ActivityContainer extends Activity implements Container {
 
 
     private Controller _controller;
-    private DocumentView _documentView;
+
+    protected DocumentView _documentView;
+
+    protected void onCreateDocumentView() {
+        setContentView(R.layout.kk_document);
+        _documentView = (DocumentView) findViewById(R.id.kk_documentView);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        setContentView(R.layout.kk_document);
-
-        _documentView = (DocumentView) findViewById(R.id.kk_documentView);
+        onCreateDocumentView();
 
         Application app = null;
         Object action = null;
@@ -113,6 +121,18 @@ public class ActivityContainer extends Activity implements Container {
     private Application _application;
     private Object _action;
 
+    protected void onCreateViewElement(ViewElement element) {
+
+    }
+
+    protected void onCreatePage(IObserver page) {
+
+    }
+
+    protected void onRun(Controller controller) {
+
+    }
+
     @Override
     public void open(Application app, Object action) {
 
@@ -133,6 +153,7 @@ public class ActivityContainer extends Activity implements Container {
         if(_controller != null) {
 
             final DocumentView documentView = _documentView;
+            final WeakReference<ActivityContainer> v = new WeakReference<>(this);
 
             _controller.page().on(new String[]{"action", "close"}, new Listener<ActivityContainer>() {
                 @Override
@@ -159,14 +180,21 @@ public class ActivityContainer extends Activity implements Container {
                 }
             },this, Observer.PRIORITY_NORMAL,false);
 
+            onCreatePage(_controller.page());
+
             _controller.application().post(new Runnable() {
                 @Override
                 public void run() {
                     if(_controller instanceof ViewController) {
-                        ((ViewController) _controller).run(documentView);
+                        ViewElement element = ((ViewController) _controller).run(documentView);
+                        ActivityContainer vv = v.get();
+                        if(vv != null && element != null) {
+                            vv.onCreateViewElement(element);
+                        }
                     } else {
                         _controller.run();
                     }
+                    onRun(_controller);
                 }
             });
         }
