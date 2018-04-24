@@ -127,10 +127,21 @@ public class ActivityContainer extends Activity implements Container {
 
     protected void onCreatePage(IObserver page) {
 
+
+
     }
 
     protected void onRun(Controller controller) {
 
+        Object v = controller.page().get(new String[]{"page", "orientation"});
+
+        if(v != null && v instanceof String) {
+            if("landscape".equals(v)) {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            } else {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            }
+        }
     }
 
     @Override
@@ -216,20 +227,6 @@ public class ActivityContainer extends Activity implements Container {
                 }
             },this, Observer.PRIORITY_NORMAL,false);
 
-            _controller.page().on(new String[]{"page", "orientation"}, new Listener<ActivityContainer>() {
-                @Override
-                public void onChanged(IObserver observer, String[] changedKeys, Object value, ActivityContainer weakObject) {
-
-                    if(weakObject != null && value != null) {
-                        if("landscape".equals(value)) {
-                            weakObject.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                        } else {
-                            weakObject.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                        }
-
-                    }
-                }
-            },this, Observer.PRIORITY_NORMAL,false);
 
             onCreatePage(_controller.page());
 

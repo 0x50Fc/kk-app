@@ -65,6 +65,7 @@ public abstract class Shell {
             Activity v = _activitys.get(i).get();
             if(v == null) {
                 _activitys.remove(i);
+                i --;
                 continue;
             }
             return v;
