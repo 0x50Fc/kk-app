@@ -134,6 +134,33 @@ public class ActivityContainer extends Activity implements Container {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        if(_documentView != null) {
+            ViewElement element = _documentView.element();
+            if(element != null) {
+                element.onResume(this);
+            }
+        }
+
+    }
+
+    @Override
+    protected void onPause() {
+
+        if(_documentView != null) {
+            ViewElement element = _documentView.element();
+            if(element != null) {
+                element.onPause(this);
+            }
+        }
+
+        super.onPause();
+    }
+
+
+    @Override
     public void open(Application app, Object action) {
 
         _application = app;
