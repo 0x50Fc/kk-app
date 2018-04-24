@@ -17,8 +17,10 @@ import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.TreeMap;
 
 import cn.kkmofang.http.HttpOptions;
@@ -53,21 +55,79 @@ public abstract class Shell {
         return _context;
     }
 
+    private WeakReference<Application> _rootApplication = null;
+
+    private List<WeakReference<Activity>> _activitys = new LinkedList<>();
+
+    public Activity topActivity() {
+        int i= _activitys.size() - 1;
+        while(i >= 0) {
+            Activity v = _activitys.get(i).get();
+            if(v == null) {
+                _activitys.remove(i);
+                continue;
+            }
+            return v;
+        }
+        return null;
+    }
+    public Application rootApplication() {
+        if(_rootApplication != null) {
+            return _rootApplication.get();
+        }
+        return null;
+    }
+
     public Activity rootActivity() {
         return _rootActivity != null ? _rootActivity.get() : null;
     }
 
     public void setRootActivity(Activity rootActivity) {
+        _activitys.clear();
         if(rootActivity == null) {
             _rootActivity = null;
         } else {
-            _rootActivity = new WeakReference<Activity>(rootActivity);
+            _rootActivity = new WeakReference<>(rootActivity);
+            _activitys.add(_rootActivity);
         }
         if(rootActivity != null) {
             DisplayMetrics metrics = new DisplayMetrics();
             rootActivity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
             Pixel.UnitRPX = Math.min(metrics.widthPixels,metrics.heightPixels) / 750.0f;
             Pixel.UnitPX = metrics.density;
+        }
+    }
+
+    public void removeActivity(Activity activity) {
+        int i=0;
+        while(i < _activitys.size()) {
+            Activity v = _activitys.get(i).get();
+            if(v == null || v == activity) {
+                _activitys.remove(i);
+                continue;
+            }
+            i ++;
+        }
+    }
+
+    public void addActivity(Activity activity) {
+        _activitys.add(new WeakReference<>(activity));
+    }
+
+    public void popActivity(int n) {
+
+        int i = _activitys.size() - 1;
+
+        while(n > 0 && i > 0) {
+            Activity v = _activitys.get(i).get();
+            if(v == null) {
+                _activitys.remove(i);
+                i --;
+            } else {
+                _activitys.remove(i);
+                i --;
+                n --;
+            }
         }
     }
 
@@ -132,8 +192,10 @@ public abstract class Shell {
             URI u = URI.create(url);
 
 
+            final String itemURL = u.resolve(topath).toString();
+
             HttpOptions options = new HttpOptions();
-            options.url = u.resolve(topath).toString();
+            options.url = itemURL;
             options.method = HttpOptions.METHOD_GET;
             options.type = HttpOptions.TYPE_URI;
 
@@ -149,12 +211,16 @@ public abstract class Shell {
             };
 
             options.onload = new HttpOptions.OnLoad() {
-                @Override
+
                 public void on(Object data, Exception error, Object weakObject) {
 
                     if(error != null) {
-                        if(fn != null) {
-                            fn.onError(url,error);
+                        if (fn != null) {
+                            fn.onError(url, error);
+                        }
+                    } else if(data == null || !( data instanceof  String)) {
+                        if (fn != null) {
+                            fn.onError(url, new Exception("下载出错了: " + itemURL));
                         }
                     } else {
                         File file = new File((String) data);
@@ -370,7 +436,7 @@ public abstract class Shell {
     }
 
     protected void openWindow(Application app, Controller controller,Object action) {
-        WindowController v = new WindowController(rootActivity(),controller);
+        WindowController v = new WindowController(topActivity(),controller);
         v.show();
     }
 
@@ -378,7 +444,8 @@ public abstract class Shell {
         return ActivityContainer.class;
     }
 
-    protected void openActivity(Application app, Controller controller,Object action) {
+
+    protected void openActivity(Application app, Object action) {
 
         Activity root = rootActivity();
 
@@ -398,6 +465,19 @@ public abstract class Shell {
 
     protected void openAction(Application app, Object action) {
 
+        String back = ScriptContext.stringValue(ScriptContext.get(action,"back"),null);
+
+        if(back != null) {
+            int n = 0;
+            String[] vs = back.split("/");
+            for(String v : vs) {
+                if(v.equals("..")) {
+                    n ++;
+                }
+            }
+            popActivity(n);
+        }
+
         String type = ScriptContext.stringValue(ScriptContext.get(action,"type"),null);
 
         if("window".equals(type)) {
@@ -411,7 +491,7 @@ public abstract class Shell {
             }
 
         } else  {
-            openActivity(app,app.open(action),action);
+            openActivity(app,action);
         }
     }
 
@@ -443,6 +523,12 @@ public abstract class Shell {
                 }
             }
         },app, Observer.PRIORITY_NORMAL,false);
+
+        app.setShell(this);
+
+        if(_rootApplication == null || _rootApplication.get() == null) {
+            _rootApplication = new WeakReference<Application>(app);
+        }
 
         app.run();
     }

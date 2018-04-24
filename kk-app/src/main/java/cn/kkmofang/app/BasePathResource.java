@@ -14,7 +14,7 @@ public class BasePathResource implements IResource{
 
     public BasePathResource(IResource parent,String basePath) {
         _parent = parent;
-        _basePath = basePath;
+        _basePath = basePath.endsWith("/") ? basePath : basePath + "/";
     }
 
     public String path(String name) {
@@ -22,8 +22,6 @@ public class BasePathResource implements IResource{
             return name;
         } else if(name.startsWith("./")) {
             return _basePath + name.substring(2);
-        } else if(!_basePath.endsWith("/")) {
-            return _basePath + "/" + name;
         }
         return _basePath + name;
     }

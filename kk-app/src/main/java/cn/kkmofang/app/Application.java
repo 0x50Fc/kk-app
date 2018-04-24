@@ -330,6 +330,23 @@ public class Application {
         });
     }
 
+    private WeakReference<Shell> _shell;
+
+    public Shell shell() {
+        if(_shell != null) {
+            return _shell.get();
+        }
+        return null;
+    }
+
+    public void setShell(Shell shell) {
+        if(shell == null) {
+            _shell = null;
+        } else {
+            _shell = new WeakReference<>(shell);
+        }
+    }
+
     private final static Map<Long,WeakReference<Application>> _applications = new TreeMap<>();
 
     public final static Application get(long id) {
