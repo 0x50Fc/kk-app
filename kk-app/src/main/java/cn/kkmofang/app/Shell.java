@@ -513,7 +513,7 @@ public abstract class Shell {
             @Override
             public void onChanged(IObserver observer, String[] changedKeys, Object value, Application weakObject) {
                 if(weakObject != null && value != null && v.get() != null && value instanceof String) {
-                    new AlertDialog.Builder(v.get().rootActivity())
+                    new AlertDialog.Builder(v.get().topActivity())
                             .setMessage((String) value)
                             .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                                 @Override
