@@ -10,10 +10,8 @@ import java.lang.ref.WeakReference;
 import cn.kkmofang.observer.IObserver;
 import cn.kkmofang.observer.Listener;
 import cn.kkmofang.observer.Observer;
-import cn.kkmofang.view.BodyElement;
 import cn.kkmofang.view.DocumentView;
 import cn.kkmofang.view.ViewElement;
-import cn.kkmofang.view.value.Pixel;
 
 /**
  * Created by zhanghailong on 2018/4/8.
