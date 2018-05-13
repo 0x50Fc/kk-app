@@ -1,8 +1,6 @@
 package cn.kkmofang.app;
 
-import android.app.Activity;
-import android.graphics.Point;
-import android.os.Handler;
+
 import android.util.Log;
 
 import java.io.IOException;
@@ -21,6 +19,7 @@ import cn.kkmofang.script.ScriptContext;
 import cn.kkmofang.view.Element;
 import cn.kkmofang.view.IViewContext;
 import cn.kkmofang.view.ViewContext;
+import cn.kkmofang.unity.R;
 
 /**
  * Created by zhanghailong on 2018/3/12.

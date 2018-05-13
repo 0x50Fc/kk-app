@@ -18,6 +18,9 @@ android {
         }
     }
 
+    lintOptions{
+        abortOnError false
+    }
 }
 
 dependencies {
@@ -29,4 +32,5 @@ dependencies {
     compile project(':kk-observer')
     compile project(':kk-http')
     compile project(':kk-image')
+    compile project(':kk-unity')
 }

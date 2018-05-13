@@ -46,11 +46,15 @@ public class ViewContext extends cn.kkmofang.app.ViewContext {
                     .load(url)
                     .into(new SimpleTarget<GlideDrawable>() {
                         @Override
-                        public void onResourceReady(GlideDrawable glideDrawable, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                        public void onResourceReady(final GlideDrawable glideDrawable, GlideAnimation<? super GlideDrawable> glideAnimation) {
 
                             if(glideDrawable instanceof GlideBitmapDrawable) {
-                                Bitmap bitmap =  ((GlideBitmapDrawable) glideDrawable).getBitmap();
-                                callback.onImage(new Image(bitmap,style));
+                                callback.onImage(new Image(new Image.BitmapProvider() {
+                                    @Override
+                                    public Bitmap getBitmap() {
+                                        return ((GlideBitmapDrawable) glideDrawable).getBitmap();
+                                    }
+                                }, style));
                             } else {
                                 callback.onImage(glideDrawable);
                             }
@@ -108,17 +112,24 @@ public class ViewContext extends cn.kkmofang.app.ViewContext {
 
                 try {
 
-                    Bitmap bitmap = BitmapFactory.decodeStream(in);
+                    final Drawable v = Drawable.createFromStream(in,name);
 
-                    style.capLeft = capLeft * scale;
-                    style.capTop = capTop * scale;
-                    style.capSize = scale;
-                    style.scale = scale;
+                    if(v instanceof BitmapDrawable) {
 
-                    if(style.radius > 0){
-                        Log.d("","");
+                        style.capLeft = capLeft * scale;
+                        style.capTop = capTop * scale;
+                        style.capSize = scale;
+                        style.scale = scale;
+
+                        return new Image(new Image.BitmapProvider() {
+                            @Override
+                            public Bitmap getBitmap() {
+                                return ((BitmapDrawable) v).getBitmap();
+                            }
+                        }, style);
                     }
-                    return new Image(bitmap,style);
+
+                    return null;
 
                 } finally {
                     try {
