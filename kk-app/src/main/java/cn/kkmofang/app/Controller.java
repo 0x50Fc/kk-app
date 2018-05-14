@@ -18,10 +18,12 @@ public class Controller extends RecycleContainer {
     private Application _application;
     private IObserver _page;
     private JSObserver _jsPage;
+    private JSObserver _jsApp;
     private Map<String,Object> _query;
     private String _path;
     private JSHttp _http;
-
+    private AsyncCaller _caller;
+    private JSWebSocket _jsWebSocket;
     public Application application() {
         return _application;
     }
@@ -61,6 +63,30 @@ public class Controller extends RecycleContainer {
         return _http;
     }
 
+    public JSObserver jsApp() {
+        if(_jsApp == null) {
+            Application app = application();
+            if(app != null) {
+                _jsApp = new JSObserver(app.observer());
+            }
+        }
+        return _jsApp;
+    }
+
+    public AsyncCaller caller() {
+        if(_caller == null) {
+            _caller = new AsyncCaller();
+        }
+        return _caller;
+    }
+
+    public JSWebSocket jsWebSocket() {
+        if(_jsWebSocket == null) {
+            _jsWebSocket = new JSWebSocket();
+        }
+        return _jsWebSocket;
+    }
+
     public void setQuery(Map<String,Object> query) {
         _query = query;
     }
@@ -79,10 +105,16 @@ public class Controller extends RecycleContainer {
 
             Map<String,Object> libs = new TreeMap<>();
 
+            libs.put("app",jsApp());
             libs.put("page",jsPage());
             libs.put("query",query());
             libs.put("path",path());
             libs.put("http",http());
+            libs.put("setTimeout",caller().SetTimeoutFunc);
+            libs.put("clearTimeout",caller().ClearTimeoutFunc);
+            libs.put("setInterval",caller().SetIntervalFunc);
+            libs.put("clearInterval",caller().ClearIntervalFunc);
+            libs.put("WebSocket",jsWebSocket());
 
             _application.exec(_path + ".js",libs);
 
@@ -126,7 +158,18 @@ public class Controller extends RecycleContainer {
             _http.cancel();
             _http = null;
         }
-        _jsPage = null;
+        if(_jsPage != null) {
+            _jsPage.recycle();
+            _jsPage = null;
+        }
+        if(_jsApp != null) {
+            _jsApp.recycle();
+            _jsApp = null;
+        }
+        if(_jsWebSocket != null) {
+            _jsWebSocket.recycle();
+            _jsWebSocket = null;
+        }
         super.recycle();
     }
 

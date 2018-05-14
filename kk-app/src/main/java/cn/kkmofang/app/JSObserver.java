@@ -14,7 +14,7 @@ import cn.kkmofang.script.ScriptContext;
  * Created by zhanghailong on 2018/3/21.
  */
 
-public class JSObserver implements IScriptObject {
+public class JSObserver implements IScriptObject ,IRecycle {
 
     private final WeakReference<IObserver> _observer;
 
@@ -284,10 +284,15 @@ public class JSObserver implements IScriptObject {
 
     @Override
     protected void finalize() throws Throwable {
+        recycle();
+        super.finalize();
+    }
+
+    @Override
+    public void recycle() {
         IObserver v = _observer.get();
         if(v != null) {
             v.off(null,null,this);
         }
-        super.finalize();
     }
 }

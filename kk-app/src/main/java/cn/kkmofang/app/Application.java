@@ -38,11 +38,15 @@ public class Application extends RecycleContainer {
     private final android.content.Context _context;
     private final IHttp _http;
     private final IViewContext _viewContext;
+    private final AsyncCaller _caller;
+    private final JSWebSocket _jsWebSocket;
 
     public Application(android.content.Context context,IResource resource,IHttp http,IViewContext viewContext) {
         _jsContext = new Context();
         _observer = new Observer(_jsContext);
         _jsObserver = new JSObserver(_observer);
+        _caller = new AsyncCaller();
+        _jsWebSocket = new JSWebSocket();
         _resource = resource;
         _context = context;
         _http = http;
@@ -100,6 +104,52 @@ public class Application extends RecycleContainer {
         });
         _jsContext.putProp(-3);
 
+        _jsContext.push("compile");
+        _jsContext.pushFunction(new IScriptFunction() {
+            @Override
+            public int call() {
+
+                Application v = app.get();
+
+                if(v != null) {
+
+                    Context ctx = (Context) ScriptContext.currentContext();
+
+                    int top = ctx.getTop();
+
+                    if(top > 0 && ctx.isString(-top)) {
+
+                        String name = ctx.toString(-top);
+
+                        String vv = v.resource().getString(name);
+
+                        StringBuffer code = new StringBuffer();
+
+                        if(top > 1 && ctx.isString(-top + 1)) {
+                            code.append(ctx.toString(-top  +1));
+                        }
+
+                        if(vv != null) {
+                            code.append(vv);
+                        }
+
+                        if(top > 2 && ctx.isString(-top + 2)) {
+                            code.append(ctx.toString(-top  +2));
+                        }
+
+                        ctx.compile(code.toString(),name);
+
+                        return 1;
+                    }
+
+                }
+
+
+                return 0;
+            }
+        });
+        _jsContext.putProp(-3);
+
 
         _jsContext.putProp(-3);
 
@@ -124,7 +174,7 @@ public class Application extends RecycleContainer {
                 }
             }
             if(code != null) {
-                execCode(code, null);
+                execCode(code, "kk.require.js",null);
             }
         }
 
@@ -215,15 +265,37 @@ public class Application extends RecycleContainer {
         return _http;
     }
 
-    public void execCode(String code,Map<String,Object> librarys) {
+    public void execCode(String code,String name,Map<String,Object> librarys) {
         ViewContext.push(_viewContext);
         ScriptContext.pushContext(_jsContext);
 
         if(librarys == null) {
-            librarys = new TreeMap<String,Object>();
+            librarys = new TreeMap<>();
         }
 
-        librarys.put("app",_jsObserver);
+        if(!librarys.containsKey("app")) {
+            librarys.put("app",_jsObserver);
+        }
+
+        if(!librarys.containsKey("setTimeout")) {
+            librarys.put("setTimeout",_caller.SetTimeoutFunc);
+        }
+
+        if(!librarys.containsKey("clearTimeout")) {
+            librarys.put("clearTimeout",_caller.ClearTimeoutFunc);
+        }
+
+        if(!librarys.containsKey("setInterval")) {
+            librarys.put("setInterval",_caller.SetIntervalFunc);
+        }
+
+        if(!librarys.containsKey("clearInterval")) {
+            librarys.put("clearInterval",_caller.ClearIntervalFunc);
+        }
+
+        if(!librarys.containsKey("WebSocket")) {
+            librarys.put("WebSocket",_jsWebSocket);
+        }
 
         List<Object> arguments = new ArrayList<>();
 
@@ -241,17 +313,26 @@ public class Application extends RecycleContainer {
 
         execCode.append("){").append(code).append("})");
 
-        _jsContext.eval(execCode.toString());
+        _jsContext.compile(execCode.toString(),name);
 
         if(_jsContext.isFunction(-1)) {
 
-            for(Object v : arguments) {
-                _jsContext.pushValue(v);
-            }
+            if(_jsContext.pcall(0) != cn.kkmofang.duktape.Context.DUK_EXEC_SUCCESS) {
 
-            if(_jsContext.pcall(arguments.size()) != cn.kkmofang.duktape.Context.DUK_EXEC_SUCCESS) {
                 String v = _jsContext.getErrorString(-1);
                 Log.d(Context.TAG,v);
+
+            } else if(_jsContext.isFunction(-1)){
+
+                for (Object v : arguments) {
+                    _jsContext.pushValue(v);
+                }
+
+                if (_jsContext.pcall(arguments.size()) != cn.kkmofang.duktape.Context.DUK_EXEC_SUCCESS) {
+                    String v = _jsContext.getErrorString(-1);
+                    Log.d(Context.TAG, v);
+                }
+
             }
 
             _jsContext.pop();
@@ -269,7 +350,7 @@ public class Application extends RecycleContainer {
         String code = _resource.getString(name);
 
         if(code != null) {
-            execCode(code,librarys);
+            execCode(code,name,librarys);
         }
     }
 
@@ -347,7 +428,9 @@ public class Application extends RecycleContainer {
     }
 
     public void recycle() {
-
+        _jsWebSocket.recycle();
+        _caller.recycle();
+        _jsObserver.recycle();
         super.recycle();
     }
 

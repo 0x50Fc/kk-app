@@ -1,6 +1,7 @@
 package cn.kkmofang.app;
 
 import android.content.res.AssetManager;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 
 import java.io.IOException;
@@ -50,6 +51,25 @@ public class AssetResource implements IResource{
             path = _basePath + name;
         }
         return _asset.open(path);
+    }
+
+    @Override
+    public Drawable getDrawable(String name) {
+
+        try {
+
+            InputStream in = open(name);
+
+            try {
+                return Drawable.createFromStream(in,"asset://" + name);
+            }
+            finally {
+                in.close();
+            }
+        } catch (IOException e) {
+            Log.d(Context.TAG,Log.getStackTraceString(e));
+        }
+        return null;
     }
 
 }

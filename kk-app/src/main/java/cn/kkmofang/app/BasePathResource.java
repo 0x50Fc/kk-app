@@ -1,5 +1,7 @@
 package cn.kkmofang.app;
 
+import android.graphics.drawable.Drawable;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -34,5 +36,10 @@ public class BasePathResource implements IResource{
     @Override
     public InputStream open(String name) throws IOException {
         return _parent.open(path(name));
+    }
+
+    @Override
+    public Drawable getDrawable(String name) {
+        return _parent.getDrawable(path(name));
     }
 }

@@ -1,5 +1,6 @@
 package cn.kkmofang.app;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -13,7 +14,7 @@ public class RecycleContainer implements IRecycle {
 
     public void addRecycle(IRecycle recycle) {
         if(_recycles == null){
-            _recycles = new TreeSet<>();
+            _recycles = new HashSet<>();
         }
         _recycles.add(recycle);
     }
@@ -35,9 +36,4 @@ public class RecycleContainer implements IRecycle {
         }
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        recycle();
-        super.finalize();
-    }
 }

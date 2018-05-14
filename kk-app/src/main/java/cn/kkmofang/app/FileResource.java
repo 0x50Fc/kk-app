@@ -1,5 +1,6 @@
 package cn.kkmofang.app;
 
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 
 import java.io.File;
@@ -90,6 +91,11 @@ public class FileResource implements IResource{
     @Override
     public InputStream open(String name) throws IOException {
         return new FileInputStream(new File(_basePath,name));
+    }
+
+    @Override
+    public Drawable getDrawable(String name) {
+        return Drawable.createFromPath((new File(_basePath,name)).getAbsolutePath());
     }
 
 }
