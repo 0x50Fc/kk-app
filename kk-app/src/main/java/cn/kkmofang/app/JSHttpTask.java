@@ -11,7 +11,7 @@ import cn.kkmofang.script.IScriptObject;
 import cn.kkmofang.script.ScriptContext;
 
 /**
- * Created by hailong11 on 2018/3/21.
+ * Created by zhanghailong on 2018/3/21.
  */
 
 public class JSHttpTask implements IScriptObject {

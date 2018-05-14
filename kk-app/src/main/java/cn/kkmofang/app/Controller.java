@@ -13,7 +13,7 @@ import cn.kkmofang.script.ScriptContext;
  * Created by zhanghailong on 2018/3/13.
  */
 
-public class Controller {
+public class Controller extends RecycleContainer {
 
     private Application _application;
     private IObserver _page;
@@ -127,6 +127,7 @@ public class Controller {
             _http = null;
         }
         _jsPage = null;
+        super.recycle();
     }
 
     public void setAction(Object action) {

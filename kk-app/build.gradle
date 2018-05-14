@@ -33,4 +33,5 @@ dependencies {
     compile project(':kk-http')
     compile project(':kk-image')
     compile project(':kk-unity')
+    compile project(':kk-websocket')
 }

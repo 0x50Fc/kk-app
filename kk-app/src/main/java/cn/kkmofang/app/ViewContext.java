@@ -8,7 +8,7 @@ import cn.kkmofang.view.ImageCallback;
 import cn.kkmofang.view.ImageTask;
 
 /**
- * Created by hailong11 on 2018/4/8.
+ * Created by zhanghailong on 2018/4/8.
  */
 
 public abstract class ViewContext implements IViewContext {

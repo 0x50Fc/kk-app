@@ -11,7 +11,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 
 /**
- * Created by hailong11 on 2018/3/21.
+ * Created by zhanghailong on 2018/3/21.
  */
 
 public class FileResource implements IResource{

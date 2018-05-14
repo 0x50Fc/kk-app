@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Created by hailong11 on 2018/4/8.
+ * Created by zhanghailong on 2018/4/8.
  */
 
 public class BasePathResource implements IResource{

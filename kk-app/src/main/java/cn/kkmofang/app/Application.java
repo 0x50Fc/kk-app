@@ -25,7 +25,7 @@ import cn.kkmofang.unity.R;
  * Created by zhanghailong on 2018/3/12.
  */
 
-public class Application {
+public class Application extends RecycleContainer {
 
     public final static double Kernel = 1.0;
     private static long _autoId = 0;
@@ -345,6 +345,12 @@ public class Application {
             _shell = new WeakReference<>(shell);
         }
     }
+
+    public void recycle() {
+
+        super.recycle();
+    }
+
 
     private final static Map<Long,WeakReference<Application>> _applications = new TreeMap<>();
 
