@@ -26,7 +26,7 @@ public class JSObserver implements IScriptObject ,IRecycle {
         return _observer.get();
     }
 
-    private final static String[] _keys = new String[]{"get","set","on","off"};
+    private final static String[] _keys = new String[]{"get","set","on","off","changeKeys"};
 
     private final static IScriptFunction Get = new IScriptFunction() {
         @Override
@@ -255,6 +255,52 @@ public class JSObserver implements IScriptObject ,IRecycle {
         }
     };
 
+    private final static IScriptFunction ChangeKeys = new IScriptFunction() {
+        @Override
+        public int call() {
+
+            cn.kkmofang.duktape.Context ctx = (cn.kkmofang.duktape.Context) ScriptContext.currentContext();
+
+            String[] keys = null;
+
+            int top = ctx.getTop();
+
+            if(top >0 ) {
+                if(ctx.isString(-top)) {
+                    keys = ctx.toString(-top).split("\\.");
+                }
+                else if(ctx.isArray(-top)) {
+                    int n = ctx.getLength(-top);
+                    keys = new String[n];
+                    for(int i=0;i<n;i++) {
+                        ctx.push(i);
+                        ctx.getProp(-top - 1);
+                        keys[i] = ctx.toString(-1);
+                        ctx.pop();
+                    }
+                }
+            }
+
+
+            ctx.pushThis();
+
+            JSObserver v = (JSObserver) ctx.toObject(-1);
+
+            ctx.pop();
+
+            if(v != null && keys != null) {
+
+                IObserver obs = v.get();
+
+                if(obs != null) {
+                    obs.change(keys);
+                }
+            }
+
+            return 0;
+        }
+    };
+
     @Override
     public String[] keys() {
         return _keys;
@@ -273,6 +319,9 @@ public class JSObserver implements IScriptObject ,IRecycle {
         }
         if("off".equals(key)) {
             return Off;
+        }
+        if("changeKeys".equals(key)) {
+            return ChangeKeys;
         }
         return null;
     }

@@ -492,7 +492,10 @@ public abstract class Shell {
             }
 
         } else  {
-            openActivity(app,action);
+            String path = ScriptContext.stringValue(ScriptContext.get(action,"path"),null);
+            if(path != null) {
+                openActivity(app, action);
+            }
         }
     }
 

@@ -2,6 +2,7 @@ package cn.kkmofang.app;
 
 import android.provider.DocumentsContract;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -13,6 +14,8 @@ import cn.kkmofang.script.ScriptContext;
 import cn.kkmofang.view.DocumentView;
 import cn.kkmofang.view.Element;
 import cn.kkmofang.view.ViewElement;
+import cn.kkmofang.view.event.Event;
+import cn.kkmofang.view.event.EventFunction;
 
 /**
  * Created by zhanghailong on 2018/3/13.
@@ -80,6 +83,22 @@ public class ViewController extends Controller {
                     }
                 }
             },documentView, Observer.PRIORITY_LOW,true);
+        }
+
+        if(_element != null) {
+
+            final WeakReference<DocumentView> view = new WeakReference<DocumentView>(documentView);
+
+            _element.on("layout", new EventFunction() {
+                @Override
+                public void onEvent(Event event) {
+                    DocumentView v = view.get();
+                    if(v != null) {
+                        v.requestLayout();
+                    }
+                }
+            });
+
         }
 
         return _element;

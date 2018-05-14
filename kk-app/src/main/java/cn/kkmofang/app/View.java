@@ -127,7 +127,9 @@ public class View {
                     data.on(v, new Listener<Object>() {
                         @Override
                         public void onChanged(IObserver observer, String[] changedKeys, Object value, Object weakObject) {
-                            e.set("hidden",ScriptContext.booleanValue(value,false) ? "false" : "true");
+                            if(value != null) {
+                                e.set("hidden", ScriptContext.booleanValue(value, false) ? "false" : "true");
+                            }
                         }
 
                     },null,Observer.PRIORITY_DESC);
@@ -136,7 +138,9 @@ public class View {
                     data.on(v, new Listener<Object>() {
                         @Override
                         public void onChanged(IObserver observer, String[] changedKeys, Object value, Object weakObject) {
-                            e.set("hidden",ScriptContext.booleanValue(value,false) ? "true" : "false");
+                            if(value != null) {
+                                e.set("hidden", ScriptContext.booleanValue(value, false) ? "true" : "false");
+                            }
                         }
 
                     },null,Observer.PRIORITY_DESC);
