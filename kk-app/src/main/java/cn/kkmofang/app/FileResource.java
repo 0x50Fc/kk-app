@@ -11,6 +11,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 
+import cn.kkmofang.image.ImageCache;
+
 /**
  * Created by zhanghailong on 2018/3/21.
  */
@@ -95,7 +97,7 @@ public class FileResource implements IResource{
 
     @Override
     public Drawable getDrawable(String name) {
-        return Drawable.createFromPath((new File(_basePath,name)).getAbsolutePath());
+        return ImageCache.main.getImage((new File(_basePath,name)));
     }
 
 }

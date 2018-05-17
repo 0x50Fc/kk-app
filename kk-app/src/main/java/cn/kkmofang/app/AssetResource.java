@@ -7,6 +7,8 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 
+import cn.kkmofang.image.ImageCache;
+
 /**
  * Created by zhanghailong on 2018/3/21.
  */
@@ -56,19 +58,33 @@ public class AssetResource implements IResource{
     @Override
     public Drawable getDrawable(String name) {
 
+        if(name == null) {
+            return null;
+        }
+
+        String key = "asset://" + name;
+
+        Drawable v = ImageCache.main.getImage(key);
+
+        if(v != null) {
+            return v;
+        }
+
         try {
 
             InputStream in = open(name);
 
             try {
-                return Drawable.createFromStream(in,"asset://" + name);
+                return ImageCache.main.getImage(in,key);
             }
             finally {
                 in.close();
             }
+
         } catch (IOException e) {
             Log.d(Context.TAG,Log.getStackTraceString(e));
         }
+
         return null;
     }
 
