@@ -21,7 +21,7 @@ public class Context extends cn.kkmofang.duktape.Context implements cn.kkmofang.
 
     public final static String TAG = "kk";
 
-    private static final Pattern pattern = Pattern.compile("[a-zA-Z][0-9a-zA-Z\\\\._]*");
+    private static final Pattern pattern = Pattern.compile("[a-zA-Z_][0-9a-zA-Z\\\\._]*");
 
     @Override
     public String[][] evaluateKeys(String evaluateCode) {

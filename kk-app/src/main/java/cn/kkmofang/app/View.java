@@ -228,6 +228,7 @@ public class View {
             @Override
             public void onChanged(IObserver observer, String[] changedKeys, Object value, Object weakObject) {
 
+
                 ViewContext.push(viewContext);
 
                 final Element ee = be.get();

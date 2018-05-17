@@ -95,6 +95,13 @@ public class ActivityContainer extends Activity implements Container {
             _controller = null;
         }
 
+        if(_application != null ){
+            Shell shell = _application.shell();
+            if(shell != null) {
+                shell.removeActivity(this);
+            }
+        }
+
         super.onDestroy();
     }
 
@@ -169,16 +176,6 @@ public class ActivityContainer extends Activity implements Container {
         super.onPause();
     }
 
-    @Override
-    public void finish() {
-        if(_application != null ){
-            Shell shell = _application.shell();
-            if(shell != null) {
-                shell.removeActivity(this);
-            }
-        }
-        super.finish();
-    }
 
     @Override
     public void open(Application app, Object action) {

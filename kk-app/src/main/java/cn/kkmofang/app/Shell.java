@@ -41,14 +41,20 @@ public abstract class Shell {
 
     private final static Charset UTF8 = Charset.forName("UTF-8");
 
+    private final Protocol _protocol;
     private final IHttp _http;
     private final android.content.Context _context;
 
     private WeakReference<Activity> _rootActivity;
 
-    public Shell(android.content.Context context,IHttp http) {
+    public Shell(android.content.Context context,IHttp http,Protocol protocol) {
         _context = context;
         _http = http;
+        _protocol = protocol;
+    }
+
+    public Shell(android.content.Context context,IHttp http){
+        this(context,http,Protocol.main);
     }
 
     public android.content.Context context() {
@@ -63,7 +69,7 @@ public abstract class Shell {
         int i= _activitys.size() - 1;
         while(i >= 0) {
             Activity v = _activitys.get(i).get();
-            if(v == null) {
+            if(v == null || v.isFinishing()) {
                 _activitys.remove(i);
                 i --;
                 continue;
@@ -80,6 +86,23 @@ public abstract class Shell {
     }
 
     public Activity rootActivity() {
+        if(_rootActivity == null || _rootActivity.get() == null) {
+
+            int i= 0;
+
+            while(i < _activitys.size()) {
+                Activity v = _activitys.get(i).get();
+                if(v == null || v.isFinishing()) {
+                    _activitys.remove(i);
+                    continue;
+                }
+                _rootActivity = new WeakReference<>(v);
+                return _rootActivity.get();
+            }
+
+            return null;
+        }
+
         return _rootActivity != null ? _rootActivity.get() : null;
     }
 
@@ -437,8 +460,11 @@ public abstract class Shell {
     }
 
     protected void openWindow(Application app, Controller controller,Object action) {
-        WindowController v = new WindowController(topActivity(),controller);
-        v.show();
+        Activity topActivity = topActivity();
+        if(topActivity != null) {
+            WindowController v = new WindowController(topActivity(), controller);
+            v.show();
+        }
     }
 
     protected Class<?> openActivityClass() {
@@ -531,8 +557,10 @@ public abstract class Shell {
         app.setShell(this);
 
         if(_rootApplication == null || _rootApplication.get() == null) {
-            _rootApplication = new WeakReference<Application>(app);
+            _rootApplication = new WeakReference<>(app);
         }
+
+        _protocol.openApplication(app);
 
         app.run();
     }
