@@ -307,7 +307,11 @@ public abstract class Shell {
 
                     if(version != null) {
 
-                        Object items = ScriptContext.get(data,"items");
+                        Object items = ScriptContext.get(data,"res");
+
+                        if(items == null) {
+                            items = ScriptContext.get(data,"items");
+                        }
 
                         if(items instanceof List) {
 
@@ -319,7 +323,10 @@ public abstract class Shell {
                                 vers = new TreeMap<>();
                                 String text = FileResource.getString(info);
                                 Object appinfo = _http.decodeJSON(text);
-                                Object its = ScriptContext.get(appinfo,"items");
+                                Object its = ScriptContext.get(appinfo,"res");
+                                if(its == null) {
+                                    its = ScriptContext.get(appinfo,"items");
+                                }
                                 if(its != null && its instanceof List) {
                                     for(Object i : (List<Object>) its) {
                                         String p = ScriptContext.stringValue(ScriptContext.get(i,"path"),null);
