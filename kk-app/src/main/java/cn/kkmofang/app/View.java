@@ -31,21 +31,7 @@ public class View {
     private final static Map<String,Class<?>> _elements = new TreeMap<>();
 
     static {
-        /*
-        [KKPagerViewElement class];
-    [KKTextElement class];
-    [KKSpanElement class];
-    [KKImgElement class];
-    [KKImageElement class];
-    [KKControlViewElement class];
-    [KKLoadingViewElement class];
-    [KKSwitchViewElement class];
-    [KKQRElement class];
-    [KKQRCaptureElement class];
-    [KKBodyElement class];
-    [KKKeyboardElement class];
-    [KKTopbarElement class];
-         */
+
         _elements.put("view", ViewElement.class);
         _elements.put("body", BodyElement.class);
         _elements.put("text", TextElement.class);
