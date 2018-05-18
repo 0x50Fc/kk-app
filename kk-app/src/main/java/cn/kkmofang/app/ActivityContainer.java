@@ -57,6 +57,14 @@ public class ActivityContainer extends Activity implements Container {
     protected void onStart() {
         super.onStart();
 
+
+        if(_documentView != null) {
+            ViewElement element = _documentView.element();
+            if(element != null) {
+                element.onStart(this);
+            }
+        }
+
         if(_controller != null) {
             final Controller v = _controller;
             v.application().post(new Runnable() {
@@ -83,6 +91,13 @@ public class ActivityContainer extends Activity implements Container {
             });
         }
 
+        if(_documentView != null) {
+            ViewElement element = _documentView.element();
+            if(element != null) {
+                element.onStop(this);
+            }
+        }
+
         super.onStop();
     }
 
@@ -93,6 +108,13 @@ public class ActivityContainer extends Activity implements Container {
         if( _controller != null) {
             _controller.recycle();
             _controller = null;
+        }
+
+        if(_documentView != null) {
+            ViewElement element = _documentView.element();
+            if(element != null) {
+                element.recycleView();
+            }
         }
 
         if(_application != null ){
