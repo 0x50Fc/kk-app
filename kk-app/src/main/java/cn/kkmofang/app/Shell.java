@@ -155,8 +155,8 @@ public abstract class Shell {
         }
     }
 
-    public void open(String url) {
-        open(url,false);
+    public void open(String url,Object query) {
+        open(url,query,false);
     }
 
     protected void setContent(File file,String content) {
@@ -364,14 +364,14 @@ public abstract class Shell {
 
     }
 
-    public void open(String url, boolean checkUpdate)  {
+    public void open(String url,final Object query, boolean checkUpdate)  {
 
         if(url == null) {
             return;
         }
 
         if(url.startsWith("asset://")) {
-            open(url,new AssetResource(_context.getAssets(),""),url.substring(8));
+            open(url,query,new AssetResource(_context.getAssets(),""),url.substring(8));
         } else if(url.startsWith("http://") || url.startsWith("https://")) {
 
             String key = HttpOptions.cacheKey(url);
@@ -396,7 +396,7 @@ public abstract class Shell {
                     info = new File(path,"app.json");
 
                     if(info.exists()) {
-                        open(url,new FileResource(null),path.getAbsolutePath());
+                        open(url,query,new FileResource(null),path.getAbsolutePath());
                         load(url,null);
                         return;
                     }
@@ -416,7 +416,7 @@ public abstract class Shell {
                     Shell vv = v.get();
 
                     if(vv != null) {
-                        vv.open(url,new FileResource(null),path.getAbsolutePath());
+                        vv.open(url,query,new FileResource(null),path.getAbsolutePath());
                         vv.didLoading(url,path);
                     }
                 }
@@ -444,7 +444,7 @@ public abstract class Shell {
             });
 
         } else {
-            open(url,new FileResource(null),url);
+            open(url,query,new FileResource(null),url);
         }
     }
 
@@ -514,7 +514,7 @@ public abstract class Shell {
             String url = ScriptContext.stringValue(ScriptContext.get(action,"url"),null);
 
             if(url != null) {
-                open(url);
+                open(url,ScriptContext.get(action,"query"));
             }
 
         } else  {
@@ -567,12 +567,13 @@ public abstract class Shell {
 
     abstract protected IViewContext openViewContext(IResource resource, String path);
 
-    protected void open(String url, IResource resource, String path){
+    protected void open(String url, Object query,IResource resource, String path){
 
         Application app = new Application(_context,new BasePathResource(resource,path),_http,openViewContext(resource,path));
 
         app.observer().set(new String[]{"path"},path);
         app.observer().set(new String[]{"url"},url);
+        app.observer().set(new String[]{"query"},query);
 
         openApplication(app);
 
