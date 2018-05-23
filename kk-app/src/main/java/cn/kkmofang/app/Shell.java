@@ -378,10 +378,10 @@ public abstract class Shell {
         }
 
         if(url.startsWith("asset://")) {
-            open(url,query,new AssetResource(_context.getAssets(),""),url.substring(8));
+            open(url,query,new AssetResource(_context.getAssets(),""),url.substring(8),null);
         } else if(url.startsWith("http://") || url.startsWith("https://")) {
 
-            String key = HttpOptions.cacheKey(url);
+            final String key = HttpOptions.cacheKey(url);
             File path = new File(_context.getDir("kk",android.content.Context.MODE_PRIVATE),key);
 
             if(!checkUpdate) {
@@ -403,7 +403,7 @@ public abstract class Shell {
                     info = new File(path,"app.json");
 
                     if(info.exists()) {
-                        open(url,query,new FileResource(null),path.getAbsolutePath());
+                        open(url,query,new FileResource(null),path.getAbsolutePath(),key);
                         load(url,null);
                         return;
                     }
@@ -423,7 +423,7 @@ public abstract class Shell {
                     Shell vv = v.get();
 
                     if(vv != null) {
-                        vv.open(url,query,new FileResource(null),path.getAbsolutePath());
+                        vv.open(url,query,new FileResource(null),path.getAbsolutePath(),key);
                         vv.didLoading(url,path);
                     }
                 }
@@ -451,7 +451,7 @@ public abstract class Shell {
             });
 
         } else {
-            open(url,query,new FileResource(null),url);
+            open(url,query,new FileResource(null),url,null);
         }
     }
 
@@ -586,12 +586,13 @@ public abstract class Shell {
 
     abstract protected IViewContext openViewContext(IResource resource, String path);
 
-    protected void open(String url, Object query,IResource resource, String path){
+    protected void open(String url, Object query,IResource resource, String path,String key){
 
         Application app = new Application(_context,new BasePathResource(resource,path),_http,openViewContext(resource,path));
 
         app.observer().set(new String[]{"path"},path);
         app.observer().set(new String[]{"url"},url);
+        app.observer().set(new String[]{"key"},key);
         app.observer().set(new String[]{"query"},query);
 
         openApplication(app);

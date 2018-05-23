@@ -1,5 +1,6 @@
 package cn.kkmofang.app;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.*;
 import android.graphics.Color;
@@ -16,6 +17,7 @@ import cn.kkmofang.observer.Listener;
 import cn.kkmofang.observer.Observer;
 import cn.kkmofang.view.DocumentView;
 import cn.kkmofang.unity.R;
+import cn.kkmofang.view.ViewElement;
 
 /**
  * Created by zhanghailong on 2018/4/8.
@@ -47,8 +49,19 @@ public class WindowController extends Dialog {
             _controller.page().on(new String[]{"action", "close"}, new Listener<WindowController>() {
                 @Override
                 public void onChanged(IObserver observer, String[] changedKeys, Object value, WindowController weakObject) {
-                    if(weakObject != null && value != null) {
-                        weakObject.dismiss();
+                    if(weakObject != null && value != null && weakObject.isShowing()) {
+                        android.content.Context c = weakObject.getContext();
+                        try {
+                            if (c instanceof Activity){
+                                if (!((Activity) c).isFinishing() && !((Activity) c).isDestroyed()){
+                                    weakObject.dismiss();
+                                }
+                            }else {
+                                weakObject.dismiss();
+                            }
+                        } catch (Exception e){
+                            e.printStackTrace();
+                        }
                     }
                 }
             },this, Observer.PRIORITY_NORMAL,false);
@@ -107,8 +120,25 @@ public class WindowController extends Dialog {
             _controller.didDisappear();
         }
 
+
         super.onStop();
     }
+
+    public void dismiss() {
+
+        _controller.recycle();
+
+        if(_documentView != null) {
+            ViewElement element = _documentView.element();
+            if(element != null) {
+                element.recycleView();
+            }
+            _documentView.setElement(null);
+        }
+
+        super.dismiss();
+    }
+
 
 
 }
