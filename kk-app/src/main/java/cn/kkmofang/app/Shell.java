@@ -497,6 +497,14 @@ public abstract class Shell {
         }
     }
 
+    protected void openURL(Application app, Object action,String url) {
+
+    }
+
+    protected void openScheme(Application app, Object action,String scheme) {
+
+    }
+
     protected void openAction(Application app, Object action) {
 
         String back = ScriptContext.stringValue(ScriptContext.get(action,"back"),null);
@@ -513,22 +521,26 @@ public abstract class Shell {
         }
 
         String type = ScriptContext.stringValue(ScriptContext.get(action,"type"),null);
+        String url = ScriptContext.stringValue(ScriptContext.get(action,"url"),null);
+        String scheme = ScriptContext.stringValue(ScriptContext.get(action,"scheme"),null);
+        String path = ScriptContext.stringValue(ScriptContext.get(action,"path"),null);
 
         if("window".equals(type)) {
             openWindow(app, app.open(action), action);
         } else if("app".equals(type)) {
-
-            String url = ScriptContext.stringValue(ScriptContext.get(action,"url"),null);
-
             if(url != null) {
                 open(url,ScriptContext.get(action,"query"));
             }
-
-        } else  {
-            String path = ScriptContext.stringValue(ScriptContext.get(action,"path"),null);
-            if(path != null) {
-                openActivity(app, action);
+        } else if(path != null){
+            openActivity(app, action);
+        } else if(scheme != null) {
+            if(scheme.startsWith("http://") || scheme.startsWith("https://")) {
+                openURL(app,action,scheme);
+            } else {
+                openScheme(app, action, scheme);
             }
+        } else if(url != null) {
+            openURL(app,action,url);
         }
     }
 
