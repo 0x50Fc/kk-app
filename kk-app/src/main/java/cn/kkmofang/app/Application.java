@@ -40,6 +40,7 @@ public class Application extends RecycleContainer {
     private final IViewContext _viewContext;
     private final AsyncCaller _caller;
     private final JSWebSocket _jsWebSocket;
+    private JSHttp _jsHttp;
 
     public Application(android.content.Context context,IResource resource,IViewContext viewContext) {
         _jsContext = new Context();
@@ -268,6 +269,16 @@ public class Application extends RecycleContainer {
         _http = http;
     }
 
+    public JSHttp jsHttp() {
+        if(_jsHttp == null) {
+            IHttp v = http();
+            if(v != null) {
+                _jsHttp = new JSHttp(v);
+            }
+        }
+        return _jsHttp;
+    }
+
     public void execCode(String code,String name,Map<String,Object> librarys) {
         ViewContext.push(_viewContext);
         ScriptContext.pushContext(_jsContext);
@@ -298,6 +309,10 @@ public class Application extends RecycleContainer {
 
         if(!librarys.containsKey("WebSocket")) {
             librarys.put("WebSocket",_jsWebSocket);
+        }
+
+        if(!librarys.containsKey("http")) {
+            librarys.put("http",jsHttp());
         }
 
         List<Object> arguments = new ArrayList<>();
@@ -434,6 +449,9 @@ public class Application extends RecycleContainer {
         _jsWebSocket.recycle();
         _caller.recycle();
         _jsObserver.recycle();
+        if(_jsHttp != null) {
+            _jsHttp.cancel();
+        }
         super.recycle();
     }
 
