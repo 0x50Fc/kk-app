@@ -21,7 +21,7 @@ public class JSHttp implements IScriptObject{
     private final WeakReference<IHttp> _http;
 
     public JSHttp(IHttp http) {
-        _http = new WeakReference<IHttp>(http);
+        _http = new WeakReference<>(http);
     }
 
     public IHttp get() {

@@ -36,12 +36,12 @@ public class Application extends RecycleContainer {
     private final Context _jsContext;
     private final IResource _resource;
     private final android.content.Context _context;
-    private final IHttp _http;
+    private IHttp _http;
     private final IViewContext _viewContext;
     private final AsyncCaller _caller;
     private final JSWebSocket _jsWebSocket;
 
-    public Application(android.content.Context context,IResource resource,IHttp http,IViewContext viewContext) {
+    public Application(android.content.Context context,IResource resource,IViewContext viewContext) {
         _jsContext = new Context();
         _observer = new Observer(_jsContext);
         _jsObserver = new JSObserver(_observer);
@@ -49,7 +49,6 @@ public class Application extends RecycleContainer {
         _jsWebSocket = new JSWebSocket();
         _resource = resource;
         _context = context;
-        _http = http;
         _viewContext = viewContext;
         _id = ++ _autoId;
 
@@ -263,6 +262,10 @@ public class Application extends RecycleContainer {
 
     public IHttp http() {
         return _http;
+    }
+
+    public void setHttp(IHttp http) {
+        _http = http;
     }
 
     public void execCode(String code,String name,Map<String,Object> librarys) {

@@ -16,6 +16,7 @@ import cn.kkmofang.view.Element;
 import cn.kkmofang.view.ViewElement;
 import cn.kkmofang.view.event.Event;
 import cn.kkmofang.view.event.EventFunction;
+import cn.kkmofang.view.value.V;
 
 /**
  * Created by zhanghailong on 2018/3/13.
@@ -78,7 +79,18 @@ public class ViewController extends Controller {
 
                     if(value != null && documentView != null) {
                         if(changedKeys.length == 0 || keySet.contains(changedKeys[0])) {
-                            documentView.requestLayout();
+
+                            String keys[] = new String[changedKeys.length +1];
+
+                            for(int i=0;i<changedKeys.length;i++) {
+                                keys[i] = changedKeys[i];
+                            }
+
+                            keys[changedKeys.length] = "animated";
+
+                            boolean animated = V.booleanValue( observer.get(keys),false);
+
+                            documentView.setNeedsLayout(animated);
                         }
                     }
                 }

@@ -44,7 +44,8 @@ public class View {
         _elements.put("scroll", ScrollElement.class);
         _elements.put("topbar",TopbarElement.class);
         _elements.put("input",InputElement.class);
-
+        _elements.put("slide",SlideElement.class);
+        _elements.put("slide:cur",SlideElement.CurElement.class);
     }
 
     public static void setElementClass(String name,Class<?> elementClass) {

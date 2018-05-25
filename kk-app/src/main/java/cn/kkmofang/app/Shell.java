@@ -25,6 +25,7 @@ import java.util.TreeMap;
 
 import cn.kkmofang.http.HttpOptions;
 import cn.kkmofang.http.IHttp;
+import cn.kkmofang.http.IHttpTask;
 import cn.kkmofang.observer.IObserver;
 import cn.kkmofang.observer.Listener;
 import cn.kkmofang.observer.Observer;
@@ -55,6 +56,10 @@ public abstract class Shell {
 
     public Shell(android.content.Context context,IHttp http){
         this(context,http,Protocol.main);
+    }
+
+    public IHttp http() {
+        return _http;
     }
 
     public android.content.Context context() {
@@ -119,6 +124,8 @@ public abstract class Shell {
             rootActivity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
             Pixel.UnitRPX = Math.min(metrics.widthPixels,metrics.heightPixels) / 750.0f;
             Pixel.UnitPX = metrics.density;
+            Pixel.UnitVH = metrics.heightPixels / 0.01f;
+            Pixel.UnitVW = metrics.widthPixels / 0.01f;
         }
     }
 
@@ -586,9 +593,70 @@ public abstract class Shell {
 
     abstract protected IViewContext openViewContext(IResource resource, String path);
 
+    protected IHttpTask send(Application app,HttpOptions options, Object weakObject) {
+        return _http.send(options,weakObject);
+    }
+
+    protected void cancel(Application app,Object weakObject) {
+        _http.cancel(weakObject);
+    }
+
+    protected String encodeJSON(Application app,Object object) {
+        return _http.encodeJSON(object);
+    }
+
+    protected Object decodeJSON(Application app,String text) {
+        return _http.decodeJSON(text);
+    }
+
     protected void open(String url, Object query,IResource resource, String path,String key){
 
-        Application app = new Application(_context,new BasePathResource(resource,path),_http,openViewContext(resource,path));
+        Application app = new Application(_context,new BasePathResource(resource,path),openViewContext(resource,path));
+
+        {
+            final WeakReference<Shell> v = new WeakReference<>(this);
+            final WeakReference<Application> a = new WeakReference<>(app);
+            app.setHttp(new IHttp() {
+                @Override
+                public IHttpTask send(HttpOptions options, Object weakObject) {
+                    Shell vv = v.get();
+                    Application aa = a.get();
+                    if(vv != null && aa != null) {
+                        return vv.send(aa,options,weakObject);
+                    }
+                    return null;
+                }
+
+                @Override
+                public void cancel(Object weakObject) {
+                    Shell vv = v.get();
+                    Application aa = a.get();
+                    if(vv != null && aa != null) {
+                        vv.cancel(aa,weakObject);
+                    }
+                }
+
+                @Override
+                public String encodeJSON(Object object) {
+                    Shell vv = v.get();
+                    Application aa = a.get();
+                    if(vv != null && aa != null) {
+                        return vv.encodeJSON(aa,object);
+                    }
+                    return null;
+                }
+
+                @Override
+                public Object decodeJSON(String text) {
+                    Shell vv = v.get();
+                    Application aa = a.get();
+                    if(vv != null && aa != null) {
+                        return vv.decodeJSON(aa,text);
+                    }
+                    return null;
+                }
+            });
+        }
 
         app.observer().set(new String[]{"path"},path);
         app.observer().set(new String[]{"url"},url);
