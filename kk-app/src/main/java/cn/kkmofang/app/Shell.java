@@ -28,6 +28,7 @@ import cn.kkmofang.observer.Observer;
 import cn.kkmofang.script.ScriptContext;
 import cn.kkmofang.view.IViewContext;
 import cn.kkmofang.view.value.Pixel;
+import cn.kkmofang.view.value.V;
 
 /**
  * Created by zhanghailong on 2018/4/8.
@@ -40,14 +41,14 @@ public abstract class Shell {
     private final Protocol _protocol;
     private final IHttp _http;
     private final android.content.Context _context;
-    private final Set<String> _loadings;
+    private final Map<String,AppLoading> _loadings;
     private WeakReference<Activity> _rootActivity;
 
     public Shell(android.content.Context context,IHttp http,Protocol protocol) {
         _context = context;
         _http = http;
         _protocol = protocol;
-        _loadings = new TreeSet<>();
+        _loadings = new TreeMap<>();
     }
 
     public Shell(android.content.Context context,IHttp http){
@@ -184,7 +185,7 @@ public abstract class Shell {
 
     protected void load(final String url,final File path,final OnLoading fn,final List<Object> items,final int index,final Object appinfo,final Map<String,String> vers,final String key) {
 
-        final Set<String> loadings = _loadings;
+        final Map<String,AppLoading> loadings = _loadings;
 
         if(fn != null) {
             fn.onProgress(url,path,index,items.size());
@@ -273,15 +274,16 @@ public abstract class Shell {
 
         } else {
 
-            loadings.remove(key);
+            AppLoading loading = loadings.remove(key);
 
             if(!path.exists()) {
                 path.mkdirs();
             }
+
             setObject(new File(path,"app.json"),appinfo);
 
             if(fn != null) {
-                fn.onLoad(url,new File(path,version));
+                fn.onLoad(url,new File(path,version),loading);
             }
         }
     }
@@ -289,16 +291,15 @@ public abstract class Shell {
     protected void load(final String url,final OnLoading fn) {
 
         final String key = HttpOptions.cacheKey(url);
-        final Set<String> loadings = _loadings;
+        final Map<String,AppLoading> loadings = _loadings;
 
-        if(loadings.contains(key)) {
-            if(fn != null) {
-                fn.onError(url, new Exception("正在下载中"));
-            }
+        if(loadings.containsKey(key)) {
+            AppLoading loading = loadings.get(key);
+            loading.canceled = false;
             return;
         }
 
-        loadings.add(key);
+        setLoading(key,url);
 
         final File path = new File(_context.getDir("kk",android.content.Context.MODE_PRIVATE),key);
 
@@ -446,12 +447,14 @@ public abstract class Shell {
             load(url, new OnLoading() {
 
                 @Override
-                public void onLoad(String url, File path) {
+                public void onLoad(String url, File path,AppLoading loading) {
 
                     Shell vv = v.get();
 
                     if(vv != null) {
-                        vv.open(url,query,new FileResource(null),path.getAbsolutePath(),key);
+                        if(loading == null || !loading.canceled) {
+                            vv.open(url, query, new FileResource(null), path.getAbsolutePath(), key);
+                        }
                         vv.didLoading(url,path);
                     }
                 }
@@ -494,12 +497,31 @@ public abstract class Shell {
         }
     }
 
-    public boolean isLoading(String url) {
+    public AppLoading isLoading(String url) {
         if(url.startsWith("http://") || url.startsWith("https://")) {
             String key = HttpOptions.cacheKey(url);
-            return _loadings.contains(key);
+            if(_loadings.containsKey(key)) {
+                return _loadings.get(key);
+            }
         }
-        return false;
+        return null;
+    }
+
+    protected AppLoading setLoading(String key,String url ){
+        if(_loadings.containsKey(key)) {
+            return _loadings.get(key);
+        }
+        AppLoading loading = new AppLoading();
+        loading.url = url;
+        _loadings.put(key,loading);
+        return loading;
+    }
+
+    protected AppLoading cancelLoading(String key) {
+        if(_loadings.containsKey(key)) {
+            return _loadings.remove(key);
+        }
+        return null;
     }
 
     public boolean has(String url) {
@@ -623,6 +645,24 @@ public abstract class Shell {
 
         if(_rootApplication == null || _rootApplication.get() == null) {
             _rootApplication = new WeakReference<>(app);
+            app.observer().on(new String[]{"app","cancel"}, new Listener<Application>() {
+                @Override
+                public void onChanged(IObserver observer, String[] changedKeys, Object value, Application weakObject) {
+                    if (weakObject != null && value != null && value instanceof Map) {
+                        Shell vv = v.get();
+                        if(vv != null) {
+                            String url = V.stringValue(V.get(value,"url"),null);
+                            if(url != null) {
+                                AppLoading loading = vv.isLoading(url);
+                                if(loading != null) {
+                                    loading.canceled = true;
+                                }
+                            }
+                        }
+
+                    }
+                }
+            },app, Observer.PRIORITY_NORMAL,false);
         }
 
         _protocol.openApplication(app);
@@ -720,7 +760,7 @@ public abstract class Shell {
 
     protected static interface OnLoading {
 
-        void onLoad(String url,File path);
+        void onLoad(String url,File path,AppLoading loading);
 
         void onProgress(String url,File path,int count, int totalCount);
 
@@ -746,6 +786,11 @@ public abstract class Shell {
 
     protected void willHttpOptions(HttpOptions options) {
 
+    }
+
+    public static class AppLoading {
+        public String url;
+        public boolean canceled;
     }
 
 }
