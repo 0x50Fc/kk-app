@@ -670,11 +670,11 @@ public abstract class Shell {
 
     private static Shell _main;
 
-    public final static void setMain(Shell main) {
+    public static void setMain(Shell main) {
         _main = main;
     }
 
-    public final static Shell main() {
+    public static Shell main() {
         return _main;
     }
 
