@@ -308,7 +308,8 @@ public abstract class Shell {
         options.url = url;
         options.method = HttpOptions.METHOD_GET;
         options.type = HttpOptions.TYPE_JSON;
-
+        options.timeout = 10;
+        
         Map<String,Object> data = new TreeMap<>();
 
         data.put("platform","android");
