@@ -6,12 +6,7 @@ import android.content.*;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
@@ -20,8 +15,9 @@ import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import cn.kkmofang.http.HttpOptions;
 import cn.kkmofang.http.IHttp;
@@ -31,7 +27,6 @@ import cn.kkmofang.observer.Listener;
 import cn.kkmofang.observer.Observer;
 import cn.kkmofang.script.ScriptContext;
 import cn.kkmofang.view.IViewContext;
-import cn.kkmofang.view.Tag;
 import cn.kkmofang.view.value.Pixel;
 
 /**
@@ -45,13 +40,14 @@ public abstract class Shell {
     private final Protocol _protocol;
     private final IHttp _http;
     private final android.content.Context _context;
-
+    private final Set<String> _loadings;
     private WeakReference<Activity> _rootActivity;
 
     public Shell(android.content.Context context,IHttp http,Protocol protocol) {
         _context = context;
         _http = http;
         _protocol = protocol;
+        _loadings = new TreeSet<>();
     }
 
     public Shell(android.content.Context context,IHttp http){
@@ -186,7 +182,9 @@ public abstract class Shell {
         setContent(file,_http.encodeJSON(content));
     }
 
-    protected void load(final String url,final File path,final OnLoading fn,final List<Object> items,final int index,final Object appinfo,final Map<String,String> vers) {
+    protected void load(final String url,final File path,final OnLoading fn,final List<Object> items,final int index,final Object appinfo,final Map<String,String> vers,final String key) {
+
+        final Set<String> loadings = _loadings;
 
         if(fn != null) {
             fn.onProgress(url,path,index,items.size());
@@ -205,7 +203,7 @@ public abstract class Shell {
                 topath = (String) item;
                 tofile = new File(todir,topath);
                 if(tofile.exists()) {
-                    load(url,path,fn,items,index + 1,appinfo,vers);
+                    load(url,path,fn,items,index + 1,appinfo,vers,key);
                     return;
                 }
             } else {
@@ -214,7 +212,7 @@ public abstract class Shell {
                 String ver = ScriptContext.stringValue(ScriptContext.get(item,"ver"),null);
                 if(vers == null || !vers.containsKey(topath) || vers.get(topath).equals(ver)) {
                     if(tofile.exists()) {
-                        load(url,path,fn,items,index + 1,appinfo,vers);
+                        load(url,path,fn,items,index + 1,appinfo,vers,key);
                         return;
                     }
                 }
@@ -235,6 +233,7 @@ public abstract class Shell {
             options.onfail = new HttpOptions.OnFail() {
                 @Override
                 public void on(Exception error, Object weakObject) {
+                    loadings.remove(key);
                     if(fn != null) {
                         fn.onError(url,error);
                     }
@@ -246,10 +245,12 @@ public abstract class Shell {
                 public void on(Object data, Exception error, Object weakObject) {
 
                     if(error != null) {
+                        loadings.remove(key);
                         if (fn != null) {
                             fn.onError(url, error);
                         }
                     } else if(data == null || !( data instanceof  String)) {
+                        loadings.remove(key);
                         if (fn != null) {
                             fn.onError(url, new Exception("下载出错了: " + itemURL));
                         }
@@ -261,7 +262,7 @@ public abstract class Shell {
                         }
                         file.renameTo(tofile);
                         if(weakObject != null) {
-                            ((Shell) weakObject).load(url,path,fn,items,index + 1,appinfo,vers);
+                            ((Shell) weakObject).load(url,path,fn,items,index + 1,appinfo,vers,key);
                         }
                     }
                 }
@@ -271,6 +272,9 @@ public abstract class Shell {
 
 
         } else {
+
+            loadings.remove(key);
+
             if(!path.exists()) {
                 path.mkdirs();
             }
@@ -284,7 +288,18 @@ public abstract class Shell {
 
     protected void load(final String url,final OnLoading fn) {
 
-        String key = HttpOptions.cacheKey(url);
+        final String key = HttpOptions.cacheKey(url);
+        final Set<String> loadings = _loadings;
+
+        if(loadings.contains(key)) {
+            if(fn != null) {
+                fn.onError(url, new Exception("正在下载中"));
+            }
+            return;
+        }
+
+        loadings.add(key);
+
         final File path = new File(_context.getDir("kk",android.content.Context.MODE_PRIVATE),key);
 
         HttpOptions options = new HttpOptions();
@@ -305,8 +320,9 @@ public abstract class Shell {
             public void on(Object data, Exception error, Object weakObject) {
 
                 if(error != null) {
+                    loadings.remove(key);
                     if(fn != null) {
-                        fn.onError(url,error);
+                        fn.onError(url, error);
                     }
                 } else {
 
@@ -346,16 +362,18 @@ public abstract class Shell {
                             }
 
                             if(weakObject != null) {
-                                ((Shell) weakObject).load(url, path, fn, (List<Object>) items, 0, data, vers);
+                                ((Shell) weakObject).load(url, path, fn, (List<Object>) items, 0, data, vers,key);
                             }
 
                         } else {
+                            loadings.remove(key);
                             if(fn != null) {
                                 fn.onError(url,new Exception("未找到应用包资源"));
                             }
                         }
 
                     } else {
+                        loadings.remove(key);
                         if(fn != null) {
                             fn.onError(url,new Exception("未找到应用版本号"));
                         }
@@ -368,9 +386,12 @@ public abstract class Shell {
             @Override
             public void on(Exception error, Object weakObject) {
 
+                loadings.remove(key);
+
                 if(fn != null) {
                     fn.onError(url,error);
                 }
+
             }
         };
 
@@ -471,6 +492,24 @@ public abstract class Shell {
         if(url.startsWith("http://") || url.startsWith("https://")) {
             load(url,null);
         }
+    }
+
+    public boolean isLoading(String url) {
+        if(url.startsWith("http://") || url.startsWith("https://")) {
+            String key = HttpOptions.cacheKey(url);
+            return _loadings.contains(key);
+        }
+        return false;
+    }
+
+    public boolean has(String url) {
+        if(url.startsWith("http://") || url.startsWith("https://")) {
+            String key = HttpOptions.cacheKey(url);
+            File path = new File(_context.getDir("kk",android.content.Context.MODE_PRIVATE),key);
+            File info = new File(path,"app.json");
+            return info.exists();
+        }
+        return true;
     }
 
     protected void openWindow(Application app, Controller controller,Object action) {
@@ -594,6 +633,7 @@ public abstract class Shell {
     abstract protected IViewContext openViewContext(IResource resource, String path);
 
     protected IHttpTask send(Application app,HttpOptions options, Object weakObject) {
+        _protocol.httpOptions(app,options,weakObject);
         return _http.send(options,weakObject);
     }
 
