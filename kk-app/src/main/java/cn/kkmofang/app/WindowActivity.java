@@ -8,6 +8,7 @@ import cn.kkmofang.observer.Listener;
 import cn.kkmofang.observer.Observer;
 import cn.kkmofang.view.DocumentView;
 import cn.kkmofang.view.ViewElement;
+import cn.kkmofang.unity.R;
 
 public class WindowActivity extends Activity {
     private DocumentView _documentView;
