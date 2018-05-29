@@ -148,10 +148,11 @@ public abstract class Shell {
 
         while(n > 0 && i > 0) {
             Activity v = _activitys.get(i).get();
-            if(v == null) {
+            if(v == null || v.isFinishing()) {
                 _activitys.remove(i);
                 i --;
             } else {
+                v.finish();
                 _activitys.remove(i);
                 i --;
                 n --;
@@ -309,7 +310,7 @@ public abstract class Shell {
         options.method = HttpOptions.METHOD_GET;
         options.type = HttpOptions.TYPE_JSON;
         options.timeout = 10;
-        
+
         Map<String,Object> data = new TreeMap<>();
 
         data.put("platform","android");

@@ -104,9 +104,14 @@ public class ViewController extends Controller {
             _element.on("layout", new EventFunction() {
                 @Override
                 public void onEvent(Event event) {
-                    DocumentView v = view.get();
+                    final DocumentView v = view.get();
                     if(v != null) {
-                        v.requestLayout();
+                        v.getHandler().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                v.requestLayout();
+                            }
+                        });
                     }
                 }
             });
