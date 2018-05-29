@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.*;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Window;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,9 +16,7 @@ import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import cn.kkmofang.http.HttpOptions;
 import cn.kkmofang.http.IHttp;
@@ -537,15 +536,17 @@ public abstract class Shell {
     }
 
     protected void openWindow(Application app, Controller controller,Object action) {
-        Activity topActivity = topActivity();
-        if(topActivity != null) {
-            WindowController v = new WindowController(topActivity(), controller);
-            v.show();
-        }
+        Intent intent = new Intent(_context, openWindowActivityClass());
+        intent.putExtra("action", (Serializable) action);
+        intent.putExtra("appid", app.id());
+        _context.startActivity(intent);
     }
 
     protected Class<?> openActivityClass() {
         return ActivityContainer.class;
+    }
+    protected Class<?> openWindowActivityClass() {
+        return WindowActivity.class;
     }
 
 

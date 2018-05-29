@@ -53,7 +53,7 @@ public class Application extends RecycleContainer {
         _viewContext = viewContext;
         _id = ++ _autoId;
 
-        _applications.put(_id,new WeakReference<Application>(this));
+        _applications.put(_id,new WeakReference<>(this));
 
         final WeakReference<Application> app = new WeakReference<Application>(this);
 
