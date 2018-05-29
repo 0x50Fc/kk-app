@@ -170,6 +170,10 @@ public class Controller extends RecycleContainer {
             _jsWebSocket.recycle();
             _jsWebSocket = null;
         }
+        if(_caller != null) {
+            _caller.recycle();
+            _caller = null;
+        }
         super.recycle();
     }
 
