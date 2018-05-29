@@ -22,6 +22,7 @@ public class Context extends cn.kkmofang.duktape.Context implements cn.kkmofang.
     public final static String TAG = "kk";
 
     private static final Pattern pattern = Pattern.compile("[a-zA-Z_][0-9a-zA-Z\\\\._]*");
+    public boolean debug = false;
 
     @Override
     public String[][] evaluateKeys(String evaluateCode) {
@@ -31,10 +32,8 @@ public class Context extends cn.kkmofang.duktape.Context implements cn.kkmofang.
             List<String[]> keys = new ArrayList<String[]>();
 
             String v = evaluateCode
-                    .replace("\'","")
-                    .replace("\"","")
-                    .replace("/'.*?'/g","")
-                    .replace("/\".*?\"/g","");
+                    .replaceAll("'.*?\'","")
+                    .replaceAll("\".*?\"","");
             Matcher matcher = pattern.matcher(v);
             while(matcher.find()) {
                 String name = matcher.group();
@@ -50,14 +49,21 @@ public class Context extends cn.kkmofang.duktape.Context implements cn.kkmofang.
         return new String[0][];
     }
 
+
     @Override
     public Object evaluate(String evaluateCode) {
 
         StringBuffer sb = new StringBuffer();
 
-        sb.append("(function(object){ var _G ; try { with(object) { _G = ")
-                .append(evaluateCode)
-                .append("; } } catch(e) {} return _G; })");
+        if(debug) {
+            sb.append("(function(object){ var _G ; try { with(object) { _G = (")
+                    .append(evaluateCode)
+                    .append("); } } catch(e) { return e+''; } return _G; })");
+        } else {
+            sb.append("(function(object){ var _G ; try { with(object) { _G = (")
+                    .append(evaluateCode)
+                    .append("); } } catch(e) {  } return _G; })");
+        }
 
         eval(sb.toString());
 

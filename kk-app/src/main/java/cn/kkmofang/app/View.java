@@ -95,7 +95,7 @@ public class View {
     public static void addOnAttribute(final Element e,Map<String,Object> attrs,IObserver data) {
 
         for(String key : attrs.keySet()) {
-            String v = ScriptContext.stringValue(attrs.get(key),"");
+            final String v = ScriptContext.stringValue(attrs.get(key),"");
             if(key.startsWith("kk:")) {
                 if(key.equals("kk:text")) {
 

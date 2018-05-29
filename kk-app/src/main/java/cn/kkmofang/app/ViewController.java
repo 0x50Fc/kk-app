@@ -109,7 +109,7 @@ public class ViewController extends Controller {
                         v.getHandler().post(new Runnable() {
                             @Override
                             public void run() {
-                                v.requestLayout();
+                                v.setNeedsLayout(true);
                             }
                         });
                     }
