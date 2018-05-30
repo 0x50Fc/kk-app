@@ -536,14 +536,15 @@ public abstract class Shell {
     }
 
     protected void openWindow(Application app, Object action) {
-        openActivity(app,action,openWindowActivityClass());
+        Activity topActivity = topActivity();
+        if(topActivity != null) {
+            WindowController v = new WindowController(topActivity,app.open(action));
+            v.show();
+        }
     }
 
     protected Class<?> openActivityClass() {
         return ActivityContainer.class;
-    }
-    protected Class<?> openWindowActivityClass() {
-        return WindowActivity.class;
     }
 
 
