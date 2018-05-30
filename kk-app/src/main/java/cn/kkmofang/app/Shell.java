@@ -633,6 +633,29 @@ public abstract class Shell {
             }
         },app, Observer.PRIORITY_NORMAL,false);
 
+        app.observer().on(new String[]{"action", "update"}, new Listener<Application>() {
+            @Override
+            public void onChanged(IObserver observer, String[] changedKeys, Object value, Application weakObject) {
+
+                Shell shell = v.get();
+
+                if(weakObject != null && value != null && shell != null && value instanceof Map) {
+
+                    String url = ScriptContext.stringValue(ScriptContext.get(value,"url"),null);
+
+                    if(url != null) {
+
+                        boolean checkUpdate = ScriptContext.booleanValue(ScriptContext.get(value,"checkUpdate"),false);
+
+                        if(checkUpdate || !shell.has(url)) {
+                            shell.update(url);
+                        }
+                    }
+
+                }
+            }
+        },app, Observer.PRIORITY_NORMAL,false);
+
         app.observer().on(new String[]{"alert"}, new Listener<Application>() {
             @Override
             public void onChanged(IObserver observer, String[] changedKeys, Object value, Application weakObject) {
