@@ -120,8 +120,8 @@ public abstract class Shell {
             rootActivity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
             Pixel.UnitRPX = Math.min(metrics.widthPixels,metrics.heightPixels) / 750.0f;
             Pixel.UnitPX = metrics.density;
-            Pixel.UnitVH = metrics.heightPixels / 0.01f;
-            Pixel.UnitVW = metrics.widthPixels / 0.01f;
+            Pixel.UnitVH = metrics.heightPixels * 0.01f;
+            Pixel.UnitVW = metrics.widthPixels * 0.01f;
         }
     }
 
