@@ -22,7 +22,6 @@ public class Context extends cn.kkmofang.duktape.Context implements cn.kkmofang.
     public final static String TAG = "kk";
 
     private static final Pattern pattern = Pattern.compile("[a-zA-Z_][0-9a-zA-Z\\\\._]*");
-    public boolean debug = false;
 
     @Override
     public String[][] evaluateKeys(String evaluateCode) {
@@ -55,21 +54,17 @@ public class Context extends cn.kkmofang.duktape.Context implements cn.kkmofang.
 
         StringBuffer sb = new StringBuffer();
 
-        if(debug) {
-            sb.append("(function(object){ var _G ; try { with(object) { _G = (")
-                    .append(evaluateCode)
-                    .append("); } } catch(e) { return e+''; } return _G; })");
-        } else {
-            sb.append("(function(object){ var _G ; try { with(object) { _G = (")
-                    .append(evaluateCode)
-                    .append("); } } catch(e) {  } return _G; })");
-        }
+        sb.append("(function(object){ var _G ; try { with(object) { _G = (")
+                .append(evaluateCode)
+                .append("); } } catch(e) { if(typeof _EvaluateThrow == 'function') { _EvaluateThrow(e); }; } return _G; })");
 
         eval(sb.toString());
 
         if(isFunction(-1)) {
 
-            Heapptr func = new Heapptr(this,getHeapptr(-1));
+            Func func = new Func(this,getHeapptr(-1));
+
+            func.evaluateCode = evaluateCode;
 
             pop();
 
@@ -112,5 +107,14 @@ public class Context extends cn.kkmofang.duktape.Context implements cn.kkmofang.
         ScriptContext.popContext();
 
         return r;
+    }
+
+    private static class Func extends Heapptr {
+
+        public String evaluateCode;
+
+        public Func(cn.kkmofang.duktape.Context context, long heapptr) {
+            super(context, heapptr);
+        }
     }
 }

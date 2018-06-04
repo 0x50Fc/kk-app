@@ -397,6 +397,8 @@ public abstract class Shell {
             }
         };
 
+        Log.d("kk",options.url);
+
         _http.send(options,this);
 
     }
