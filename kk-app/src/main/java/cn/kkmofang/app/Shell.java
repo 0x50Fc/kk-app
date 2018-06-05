@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.content.*;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Window;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -151,7 +150,11 @@ public abstract class Shell {
                 _activitys.remove(i);
                 i --;
             } else {
-                v.finish();
+                if(v instanceof IWindowContainer) {
+
+                } else {
+                    v.finish();
+                }
                 _activitys.remove(i);
                 i --;
                 n --;
@@ -217,6 +220,11 @@ public abstract class Shell {
                         return;
                     }
                 }
+
+                if(ver != null) {
+                    topath = topath + "?v=" + ver;
+                }
+
             }
 
             URI u = URI.create(url);
@@ -268,6 +276,8 @@ public abstract class Shell {
                     }
                 }
             };
+
+            Log.d("kk",options.absoluteUrl());
 
             _http.send(options,this);
 
@@ -397,7 +407,7 @@ public abstract class Shell {
             }
         };
 
-        Log.d("kk",options.url);
+        Log.d("kk",options.absoluteUrl());
 
         _http.send(options,this);
 
