@@ -3,14 +3,13 @@ package cn.kkmofang.app;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.*;
+import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.Log;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,6 +40,23 @@ public abstract class Shell {
     private final android.content.Context _context;
     private final Map<String,AppLoading> _loadings;
     private WeakReference<Activity> _rootActivity;
+
+    private Map<String,Object> _query;
+
+    public void setQuery(Map<String,Object> query) {
+        _query = query;
+    }
+
+    public Map<String,Object> query() {
+        if(_query == null) {
+            _query = new TreeMap<>();
+            _query.put("platform","android");
+            _query.put("kernel",String.valueOf(Application.Kernel));
+            _query.put("sdk",String.valueOf(Build.VERSION.SDK_INT));
+            _query.put("model",String.valueOf(Build.MODEL));
+        }
+        return _query;
+    }
 
     public Shell(android.content.Context context,IHttp http,Protocol protocol) {
         _context = context;
@@ -186,230 +202,100 @@ public abstract class Shell {
         setContent(file,_http.encodeJSON(content));
     }
 
-    protected void load(final String url,final File path,final OnLoading fn,final List<Object> items,final int index,final Object appinfo,final Map<String,String> vers,final String key) {
-
-        final Map<String,AppLoading> loadings = _loadings;
-
-        if(fn != null) {
-            fn.onProgress(url,path,index,items.size());
-        }
-
-        String version = ScriptContext.stringValue(ScriptContext.get(appinfo,"version"),"_");
-
-        if(index < items.size()) {
-
-            Object item = items.get(index);
-            String topath;
-            File todir = new File(path,version);
-            final File tofile;
-
-            if(item instanceof String) {
-                topath = (String) item;
-                tofile = new File(todir,topath);
-                if(tofile.exists()) {
-                    load(url,path,fn,items,index + 1,appinfo,vers,key);
-                    return;
-                }
-            } else {
-                topath = ScriptContext.stringValue(ScriptContext.get(item,"path"),null);
-                tofile = new File(todir,topath);
-                String ver = ScriptContext.stringValue(ScriptContext.get(item,"ver"),null);
-                if(vers == null || !vers.containsKey(topath) || vers.get(topath).equals(ver)) {
-                    if(tofile.exists()) {
-                        load(url,path,fn,items,index + 1,appinfo,vers,key);
-                        return;
-                    }
-                }
-
-                if(ver != null) {
-                    topath = topath + "?v=" + ver;
-                }
-
-            }
-
-            URI u = URI.create(url);
-
-
-            final String itemURL = u.resolve(topath).toString();
-
-            HttpOptions options = new HttpOptions();
-            options.url = itemURL;
-            options.method = HttpOptions.METHOD_GET;
-            options.type = HttpOptions.TYPE_URI;
-
-            willHttpOptions(options);
-
-            options.onfail = new HttpOptions.OnFail() {
-                @Override
-                public void on(Exception error, Object weakObject) {
-                    loadings.remove(key);
-                    if(fn != null) {
-                        fn.onError(url,error);
-                    }
-                }
-            };
-
-            options.onload = new HttpOptions.OnLoad() {
-
-                public void on(Object data, Exception error, Object weakObject) {
-
-                    if(error != null) {
-                        loadings.remove(key);
-                        if (fn != null) {
-                            fn.onError(url, error);
-                        }
-                    } else if(data == null || !( data instanceof  String)) {
-                        loadings.remove(key);
-                        if (fn != null) {
-                            fn.onError(url, new Exception("下载出错了: " + itemURL));
-                        }
-                    } else {
-                        File file = new File((String) data);
-                        File dir = tofile.getParentFile();
-                        if(!dir.exists()) {
-                            dir.mkdirs();
-                        }
-                        file.renameTo(tofile);
-                        if(weakObject != null) {
-                            ((Shell) weakObject).load(url,path,fn,items,index + 1,appinfo,vers,key);
-                        }
-                    }
-                }
-            };
-
-            Log.d("kk",options.absoluteUrl());
-
-            _http.send(options,this);
-
-
-        } else {
-
-            AppLoading loading = loadings.remove(key);
-
-            if(!path.exists()) {
-                path.mkdirs();
-            }
-
-            setObject(new File(path,"app.json"),appinfo);
-
-            if(fn != null) {
-                fn.onLoad(url,new File(path,version),loading);
-            }
-        }
-    }
-
-    protected void load(final String url,final OnLoading fn) {
+    protected AppLoading load(final String url,final AppLoading.OnLoad onload) {
 
         final String key = HttpOptions.cacheKey(url);
         final Map<String,AppLoading> loadings = _loadings;
+        AppLoading loading = null;
 
         if(loadings.containsKey(key)) {
-            AppLoading loading = loadings.get(key);
-            loading.canceled = false;
-            return;
+            loading = loadings.get(key);
+            loading.setCanceled(false);
+            return loading;
         }
 
-        setLoading(key,url);
 
         final File path = new File(_context.getDir("kk",android.content.Context.MODE_PRIVATE),key);
+        final WeakReference<Shell> shell = new WeakReference<Shell>(this);
 
-        HttpOptions options = new HttpOptions();
+        loading = new AppLoading(url, path.getAbsolutePath(), new AppLoading.Http() {
 
-        options.url = url;
-        options.method = HttpOptions.METHOD_GET;
-        options.type = HttpOptions.TYPE_JSON;
-        options.timeout = 10;
-
-        Map<String,Object> data = new TreeMap<>();
-
-        data.put("platform","android");
-        data.put("kernel",Application.Kernel + "");
-
-        willHttpOptions(options);
-
-        options.onload = new HttpOptions.OnLoad() {
             @Override
-            public void on(Object data, Exception error, Object weakObject) {
+            public void send(HttpOptions options) {
+                Shell v = shell.get();
+                if(v != null) {
+                    v._http.send(options,v);
+                }
+            }
 
-                if(error != null) {
-                    loadings.remove(key);
-                    if(fn != null) {
-                        fn.onError(url, error);
-                    }
-                } else {
+            @Override
+            public String encodeJSON(Object object) {
+                Shell v = shell.get();
+                if(v != null) {
+                    return  v._http.encodeJSON(object);
+                }
+                return "";
+            }
 
-                    String version = ScriptContext.stringValue(ScriptContext.get(data,"version"),null);
+            @Override
+            public Object decodeJSON(String text) {
+                Shell v = shell.get();
+                if(v != null) {
+                    return  v._http.decodeJSON(text);
+                }
+                return null;
+            }
+        });
 
-                    if(version != null) {
+        loading.query = this.query();
 
-                        Object items = ScriptContext.get(data,"res");
+        loading.onload = new AppLoading.OnLoad() {
 
-                        if(items == null) {
-                            items = ScriptContext.get(data,"items");
-                        }
-
-                        if(items instanceof List) {
-
-                            Map<String,String> vers = null;
-
-                            File info = new File(path,version + "/app.json");
-
-                            if(info.exists()) {
-                                vers = new TreeMap<>();
-                                String text = FileResource.getString(info);
-                                Object appinfo = _http.decodeJSON(text);
-                                Object its = ScriptContext.get(appinfo,"res");
-                                if(its == null) {
-                                    its = ScriptContext.get(appinfo,"items");
-                                }
-                                if(its != null && its instanceof List) {
-                                    for(Object i : (List<Object>) its) {
-                                        String p = ScriptContext.stringValue(ScriptContext.get(i,"path"),null);
-                                        String ver = ScriptContext.stringValue(ScriptContext.get(i,"ver"),null);
-                                        if(p != null && ver != null) {
-                                            vers.put(p,ver);
-                                        }
-                                    }
-                                }
-                            }
-
-                            if(weakObject != null) {
-                                ((Shell) weakObject).load(url, path, fn, (List<Object>) items, 0, data, vers,key);
-                            }
-
-                        } else {
-                            loadings.remove(key);
-                            if(fn != null) {
-                                fn.onError(url,new Exception("未找到应用包资源"));
-                            }
-                        }
-
-                    } else {
-                        loadings.remove(key);
-                        if(fn != null) {
-                            fn.onError(url,new Exception("未找到应用版本号"));
-                        }
+            @Override
+            public void onLoad(String url, String path, AppLoading loading) {
+                Shell v = shell.get();
+                if(v != null) {
+                    v.cancelLoading(key);
+                    if(onload != null) {
+                        v.didLoading(url,new File(path));
+                        onload.onLoad(url,path,loading);
                     }
                 }
             }
         };
 
-        options.onfail = new HttpOptions.OnFail() {
+        loading.onerror = new AppLoading.OnError() {
             @Override
-            public void on(Exception error, Object weakObject) {
-
-                loadings.remove(key);
-
-                if(fn != null) {
-                    fn.onError(url,error);
+            public void onError(String url, Exception ex) {
+                Shell v = shell.get();
+                if(v != null) {
+                    v.cancelLoading(key);
+                    if(onload != null) {
+                        v.didError(url,ex);
+                    }
                 }
-
             }
         };
 
-        Log.d("kk",options.absoluteUrl());
+        loading.onprogress = new AppLoading.OnProgress() {
+            @Override
+            public void onProgress(String url, String path, int count, int totalCount) {
+                Shell v = shell.get();
+                if(v != null && onload != null) {
+                    v.didProgress(url,new File(path),count,totalCount);
+                }
+            }
+        };
 
-        _http.send(options,this);
+        if(onload != null) {
+            willLoading(url);
+        }
+
+        setLoading(key,loading);
+
+        loading.start();
+
+        return loading;
 
     }
 
@@ -457,38 +343,16 @@ public abstract class Shell {
 
             final WeakReference<Shell> v = new WeakReference<>(this);
 
-            load(url, new OnLoading() {
-
+            load(url, new AppLoading.OnLoad() {
                 @Override
-                public void onLoad(String url, File path,AppLoading loading) {
+                public void onLoad(String url, String path, AppLoading loading) {
 
                     Shell vv = v.get();
 
                     if(vv != null) {
-                        if(loading == null || !loading.canceled) {
-                            vv.open(url, query, new FileResource(null), path.getAbsolutePath(), key);
+                        if(loading == null || !loading.isCanceled()) {
+                            vv.open(url, query, new FileResource(null), path, key);
                         }
-                        vv.didLoading(url,path);
-                    }
-                }
-
-                @Override
-                public void onProgress(String url, File path, int count, int totalCount) {
-
-                    Shell vv = v.get();
-
-                    if(vv != null) {
-                        vv.didProgress(url,path,count,totalCount);
-                    }
-                }
-
-                @Override
-                public void onError(String url, Exception error) {
-
-                    Shell vv = v.get();
-
-                    if(vv != null) {
-                        vv.didError(url,error);
                     }
 
                 }
@@ -520,12 +384,7 @@ public abstract class Shell {
         return null;
     }
 
-    protected AppLoading setLoading(String key,String url ){
-        if(_loadings.containsKey(key)) {
-            return _loadings.get(key);
-        }
-        AppLoading loading = new AppLoading();
-        loading.url = url;
+    protected AppLoading setLoading(String key,AppLoading loading ){
         _loadings.put(key,loading);
         return loading;
     }
@@ -699,7 +558,7 @@ public abstract class Shell {
                             if(url != null) {
                                 AppLoading loading = vv.isLoading(url);
                                 if(loading != null) {
-                                    loading.canceled = true;
+                                    loading.setCanceled(true);
                                 }
                             }
                         }
@@ -832,9 +691,5 @@ public abstract class Shell {
 
     }
 
-    public static class AppLoading {
-        public String url;
-        public boolean canceled;
-    }
 
 }
