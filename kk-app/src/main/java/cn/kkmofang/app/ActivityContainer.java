@@ -64,32 +64,10 @@ public class ActivityContainer extends Activity implements Container {
                 element.onStart(this);
             }
         }
-
-        if(_controller != null) {
-            final Controller v = _controller;
-            v.application().post(new Runnable() {
-                @Override
-                public void run() {
-                    v.willAppear();
-                    v.didAppear();
-                }
-            });
-        }
     }
 
     @Override
     protected void onStop() {
-
-        if(_controller != null) {
-            final Controller v = _controller;
-            v.application().post(new Runnable() {
-                @Override
-                public void run() {
-                    v.willDisappear();
-                    v.didDisappear();
-                }
-            });
-        }
 
         if(_documentView != null) {
             ViewElement element = _documentView.element();
@@ -183,10 +161,32 @@ public class ActivityContainer extends Activity implements Container {
             }
         }
 
+        if(_controller != null) {
+            final Controller v = _controller;
+            v.application().post(new Runnable() {
+                @Override
+                public void run() {
+                    v.willAppear();
+                    v.didAppear();
+                }
+            });
+        }
+
     }
 
     @Override
     protected void onPause() {
+
+        if(_controller != null) {
+            final Controller v = _controller;
+            v.application().post(new Runnable() {
+                @Override
+                public void run() {
+                    v.willDisappear();
+                    v.didDisappear();
+                }
+            });
+        }
 
         if(_documentView != null) {
             ViewElement element = _documentView.element();

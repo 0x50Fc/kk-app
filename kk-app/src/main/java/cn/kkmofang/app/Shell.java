@@ -158,7 +158,12 @@ public abstract class Shell {
     }
 
     public void popActivity(int n) {
-        for(Activity v : getPopActivity(n)) {
+        finishPopActivitys(getPopActivity(n));
+    }
+
+    public void finishPopActivitys(List<Activity> activities) {
+        for(Activity v : activities) {
+            _activitys.remove(v);
             if(v instanceof IWindowContainer) {
 
             } else {
@@ -175,14 +180,13 @@ public abstract class Shell {
 
         int i = _activitys.size() - 1;
 
-        while(n > 0 && i > 0) {
+        while(n > 0 && i >= 0) {
             Activity v = _activitys.get(i).get();
             if(v == null || v.isFinishing()) {
                 _activitys.remove(i);
                 i --;
             } else {
                 vs.add(v);
-                _activitys.remove(i);
                 if(v == root) {
                     _rootActivity = null;
                 }
@@ -506,15 +510,7 @@ public abstract class Shell {
         }
 
         if(pops != null) {
-
-            for(Activity v : pops) {
-                if(v instanceof IWindowContainer) {
-
-                } else {
-                    v.finish();
-                }
-            }
-
+            finishPopActivitys(pops);
         }
     }
 
