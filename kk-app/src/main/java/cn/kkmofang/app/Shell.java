@@ -11,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -156,9 +157,23 @@ public abstract class Shell {
         _activitys.add(new WeakReference<>(activity));
     }
 
-    public void popActivity(int idx,int n) {
+    public void popActivity(int n) {
+        for(Activity v : getPopActivity(n)) {
+            if(v instanceof IWindowContainer) {
 
-        int i = _activitys.size() - 1 - idx;
+            } else {
+                v.finish();
+            }
+        }
+    }
+
+    public List<Activity> getPopActivity(int n) {
+
+        Activity root = rootActivity();
+
+        List<Activity> vs = new ArrayList<>();
+
+        int i = _activitys.size() - 1;
 
         while(n > 0 && i > 0) {
             Activity v = _activitys.get(i).get();
@@ -166,16 +181,17 @@ public abstract class Shell {
                 _activitys.remove(i);
                 i --;
             } else {
-                if(v instanceof IWindowContainer) {
-
-                } else {
-                    v.finish();
-                }
+                vs.add(v);
                 _activitys.remove(i);
+                if(v == root) {
+                    _rootActivity = null;
+                }
                 i --;
                 n --;
             }
         }
+
+        return vs;
     }
 
     public void open(String url,Object query) {
@@ -451,7 +467,20 @@ public abstract class Shell {
 
     protected void openAction(Application app, Object action) {
 
-        int count = _activitys.size();
+        List<Activity> pops = null;
+
+        String back = ScriptContext.stringValue(ScriptContext.get(action,"back"),null);
+
+        if(back != null) {
+            int n = 0;
+            String[] vs = back.split("/");
+            for(String v : vs) {
+                if(v.equals("..")) {
+                    n ++;
+                }
+            }
+            pops = getPopActivity(n);
+        }
 
         String type = ScriptContext.stringValue(ScriptContext.get(action,"type"),null);
         String url = ScriptContext.stringValue(ScriptContext.get(action,"url"),null);
@@ -476,19 +505,16 @@ public abstract class Shell {
             openURL(app,action,url);
         }
 
-        int idx = _activitys.size() - count;
+        if(pops != null) {
 
-        String back = ScriptContext.stringValue(ScriptContext.get(action,"back"),null);
+            for(Activity v : pops) {
+                if(v instanceof IWindowContainer) {
 
-        if(back != null) {
-            int n = 0;
-            String[] vs = back.split("/");
-            for(String v : vs) {
-                if(v.equals("..")) {
-                    n ++;
+                } else {
+                    v.finish();
                 }
             }
-            popActivity(idx,n);
+
         }
     }
 
