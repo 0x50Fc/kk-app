@@ -49,6 +49,7 @@ public class View {
         _elements.put("animation",AnimationElement.class);
         _elements.put("anim:transform",AnimationElement.Transform.class);
         _elements.put("anim:opacity",AnimationElement.Opacity.class);
+        _elements.put("audio",AudioElement.class);
     }
 
     public static void setElementClass(String name,Class<?> elementClass) {
