@@ -307,6 +307,16 @@ public abstract class Shell {
             }
         };
 
+        loading.onappinfo = new AppLoading.OnAppInfo() {
+            @Override
+            public void onAppInfo(String url, Object appInfo) {
+                Shell v = shell.get();
+                if(v != null && onload != null) {
+                    v.willLoadingAppInfo(url,appInfo);
+                }
+            }
+        };
+
         if(onload != null) {
             willLoading(url);
         }
@@ -694,6 +704,10 @@ public abstract class Shell {
     }
 
     protected void willLoading(String url) {
+
+    }
+
+    protected void willLoadingAppInfo(String url,Object appInfo) {
 
     }
 

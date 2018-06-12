@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.TextView;
+
 import java.lang.ref.WeakReference;
 import cn.kkmofang.observer.IObserver;
 import cn.kkmofang.observer.Listener;
@@ -16,6 +18,7 @@ import cn.kkmofang.observer.Observer;
 import cn.kkmofang.view.DocumentView;
 import cn.kkmofang.unity.R;
 import cn.kkmofang.view.ViewElement;
+import cn.kkmofang.view.value.Pixel;
 
 /**
  * Created by zhanghailong on 2018/4/8.
@@ -26,6 +29,23 @@ public class WindowController extends Dialog {
     private DocumentView _documentView;
     private Controller _controller;
     private IWindowContainer _container;
+
+    protected void onCreateViewElement(ViewElement element) {
+
+        {
+            float top = element.padding.top.floatValue(0, 0) / Pixel.UnitPX;
+            Pixel p = new Pixel();
+            p.type = Pixel.Type.PX;
+            p.value = top - 20;
+            element.padding.top.set(p);
+        }
+
+    }
+
+    protected void onCreatePage(IObserver page) {
+
+
+    }
 
     public WindowController(android.content.Context context, Controller controller) {
         super(context,R.style.KKWindow);
@@ -75,11 +95,18 @@ public class WindowController extends Dialog {
         _documentView = findViewById(R.id.kk_documentView);
 
         if(_controller != null) {
+
+            onCreatePage(_controller.page());
+
             _controller.application().post(new Runnable() {
                 @Override
                 public void run() {
                     if(_controller instanceof ViewController) {
-                        ((ViewController) _controller).run(_documentView);
+                        ViewElement element = ((ViewController) _controller).run(_documentView);
+                        WindowController vv = v.get();
+                        if(vv != null && element != null) {
+                            vv.onCreateViewElement(element);
+                        }
                     } else {
                         _controller.run();
                     }

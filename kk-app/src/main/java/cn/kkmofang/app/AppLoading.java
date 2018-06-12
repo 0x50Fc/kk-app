@@ -35,6 +35,10 @@ public class AppLoading {
         void onError(String url,Exception ex);
     }
 
+    public interface OnAppInfo {
+        void onAppInfo(String url,Object appInfo);
+    }
+
     public interface Http {
         void send(HttpOptions options);
         String encodeJSON(Object object);
@@ -51,6 +55,7 @@ public class AppLoading {
     public OnLoad onload;
     public OnProgress onprogress;
     public OnError onerror;
+    public OnAppInfo onappinfo;
     public Object query;
 
     public AppLoading(String url,String path,Http http) {
@@ -82,6 +87,11 @@ public class AppLoading {
     }
 
     protected void onAppInfo(Object data) {
+
+        if(onappinfo != null) {
+            onappinfo.onAppInfo(_url,data);
+        }
+
         String version = V.stringValue(V.get(data,"version"),"_");
         String ver = V.stringValue(V.get(data,"ver"),"_");
 

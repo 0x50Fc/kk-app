@@ -46,6 +46,9 @@ public class View {
         _elements.put("input",InputElement.class);
         _elements.put("slide",SlideElement.class);
         _elements.put("slide:cur",SlideElement.CurElement.class);
+        _elements.put("animation",AnimationElement.class);
+        _elements.put("anim:transform",AnimationElement.Transform.class);
+        _elements.put("anim:opacity",AnimationElement.Opacity.class);
     }
 
     public static void setElementClass(String name,Class<?> elementClass) {
