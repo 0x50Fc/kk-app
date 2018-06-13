@@ -2,7 +2,12 @@ package cn.kkmofang.app;
 
 import android.graphics.drawable.Drawable;
 
+import java.io.File;
+
+import cn.kkmofang.http.IHttpTask;
 import cn.kkmofang.image.ImageStyle;
+import cn.kkmofang.view.AudioElement;
+import cn.kkmofang.view.AudioTask;
 import cn.kkmofang.view.IViewContext;
 import cn.kkmofang.view.ImageCallback;
 import cn.kkmofang.view.ImageTask;
@@ -30,4 +35,5 @@ public abstract class ViewContext implements IViewContext {
 
     abstract public Drawable getImage(String url, ImageStyle style);
 
+    abstract public AudioTask downLoadFile(String url, AudioElement.IAudioLoadCallback callback);
 }

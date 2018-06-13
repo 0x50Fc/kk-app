@@ -92,6 +92,7 @@ public class ActivityContainer extends Activity implements Container {
             ViewElement element = _documentView.element();
             if(element != null) {
                 element.recycleView();
+                element.onDestroy(this);
             }
         }
 
