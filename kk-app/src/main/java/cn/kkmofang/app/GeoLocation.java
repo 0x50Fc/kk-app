@@ -18,17 +18,17 @@ import cn.kkmofang.view.value.V;
 
 public class GeoLocation {
 
-    public static void getLocation(IObserver observer,final String[] keys,final Map<String,Object> data) {
+    public static void getLocation(Application app,final String[] keys,final Map<String,Object> data) {
 
-        final WeakReference<IObserver> obs = new WeakReference<IObserver>(observer);
+        final WeakReference<Application> a = new WeakReference<>(app);
 
         /*
         {
-            IObserver v = obs.get();
+            Application v = a.get();
             if(v != null) {
                 data.put("lat",0);
                 data.put("lng",0);
-                v.set(keys,data);
+                v.observer().set(keys,data);
             }
         }
         */
