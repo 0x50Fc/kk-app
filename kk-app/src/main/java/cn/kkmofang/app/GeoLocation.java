@@ -18,14 +18,19 @@ import cn.kkmofang.view.value.V;
 
 public class GeoLocation {
 
-    public static void getLocation(Application app,final String[] keys,final Map<String,Object> data) {
+    public static void getLocation(final WeakReference<Application> a,final String[] keys,final Map<String,Object> data) {
 
-        final WeakReference<Application> a = new WeakReference<>(app);
 
         /*
         {
             Application v = a.get();
             if(v != null) {
+            Geo geo = (Geo) app.getRecycle("GeoLocation")
+
+            if(geo == null) {
+                geo = new ...
+                app.setRecycle(geo,"GeoLocation");
+            }
                 data.put("lat",0);
                 data.put("lng",0);
                 v.observer().set(keys,data);
@@ -41,6 +46,8 @@ public class GeoLocation {
         Protocol.main.addOpenApplication(new Protocol.OpenApplication() {
             @Override
             public void open(Application app) {
+
+                final WeakReference<Application> a = new WeakReference<>(app);
 
                 app.observer().on(new String[]{"geo","location"}, new Listener<Application>() {
 
@@ -61,7 +68,7 @@ public class GeoLocation {
                                     data = new TreeMap<String,Object>();
                                 }
 
-                                getLocation(observer,sKeys,(Map<String,Object>) data);
+                                getLocation(a,sKeys,(Map<String,Object>) data);
                             }
                         }
                     }
