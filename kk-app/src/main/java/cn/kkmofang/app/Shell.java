@@ -167,7 +167,6 @@ public abstract class Shell {
 
     public void finishPopActivitys(List<Activity> activities) {
         for(Activity v : activities) {
-            _activitys.remove(v);
             if(v instanceof IWindowContainer) {
 
             } else {
@@ -191,6 +190,7 @@ public abstract class Shell {
                 i --;
             } else {
                 vs.add(v);
+                _activitys.remove(i);
                 if(v == root) {
                     _rootActivity = null;
                 }
@@ -440,12 +440,9 @@ public abstract class Shell {
         return true;
     }
 
-    protected void openWindow(Application app, Object action) {
-        Activity topActivity = topActivity();
-        if(topActivity != null) {
-            WindowController v = new WindowController(topActivity,app.open(action));
-            v.show();
-        }
+    protected void openWindow(Activity activity,Application app, Object action) {
+        WindowController v = new WindowController(activity,app.open(action));
+        v.show();
     }
 
     protected Class<?> openActivityClass() {
@@ -453,24 +450,22 @@ public abstract class Shell {
     }
 
 
-    protected void openActivity(Application app, Object action) {
-        openActivity(app,action,openActivityClass());
+    protected void openActivity(Activity container,Application app, Object action) {
+        openActivity(container,app,action,openActivityClass());
     }
 
-    protected void openActivity(Application app, Object action,Class<?> activityClass) {
+    protected void openActivity(Activity container,Application app, Object action,Class<?> activityClass) {
 
-        Activity root = rootActivity();
-
-        if(root != null && action instanceof Serializable) {
+        if(action instanceof Serializable) {
             String target = ScriptContext.stringValue(ScriptContext.get(action,"target"),null);
-            if(root instanceof Container
-                    && (! ((Container) root).isOpened()|| "root".equals(target) )) {
-                ((Container) root).open(app,action);
+            if(container instanceof Container
+                    && (! ((Container) container).isOpened()|| "root".equals(target) )) {
+                ((Container) container).open(app,action);
             } else {
                 Intent i = new Intent(_context, activityClass);
                 i.putExtra("appid", app.id());
                 i.putExtra("action", (Serializable) action);
-                root.startActivity(i);
+                container.startActivity(i);
             }
         }
     }
@@ -506,13 +501,45 @@ public abstract class Shell {
         String path = ScriptContext.stringValue(ScriptContext.get(action,"path"),null);
 
         if("window".equals(type)) {
-            openWindow(app, action);
+
+            Activity container = topActivity();
+
+            if(container == null && pops != null) {
+                for(Activity v : pops) {
+                    if(v instanceof IWindowContainer) {
+                        container = v;
+                        break;
+                    }
+                }
+            }
+
+            if(container != null) {
+                openWindow(container,app, action);
+            } else {
+                Log.d("kk","[OPEN] [WINDOWS] [FAIL] Not Found Top Activity");
+            }
+
         } else if("app".equals(type)) {
             if(url != null) {
                 open(url,ScriptContext.get(action,"query"));
             }
         } else if(path != null){
-            openActivity(app, action);
+
+            Activity container = rootActivity();
+
+            if(container == null && pops != null) {
+                for(Activity v : pops) {
+                    container = v;
+                    break;
+                }
+            }
+
+            if(container != null) {
+                openActivity(container,app, action);
+            } else {
+                Log.d("kk","[OPEN] [ACTIVITY] [FAIL] Not Found Root Activity");
+            }
+
         } else if(scheme != null) {
             if(scheme.startsWith("http://") || scheme.startsWith("https://")) {
                 openURL(app,action,scheme);
