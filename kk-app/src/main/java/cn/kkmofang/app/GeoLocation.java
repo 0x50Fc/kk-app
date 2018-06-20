@@ -23,7 +23,6 @@ import cn.kkmofang.view.value.V;
 
 public class GeoLocation {
 
-    private static final String TAG = "GeoLocation";
     public static void getLocation(final WeakReference<Application> a,final String[] keys,final Map<String,Object> data) {
 
         Application v = a.get();
@@ -42,7 +41,6 @@ public class GeoLocation {
                     if (location != null){
                         Application fv = a.get();
                         if (fv != null){
-                            Log.d(TAG, "updateLocation: " + location.getLatitude() + ":" + location.getLongitude() + ":" + provider);
                             data.put("lat", location.getLatitude());
                             data.put("lng", location.getLongitude());
                             IObserver observer = fv.observer();
@@ -63,14 +61,17 @@ public class GeoLocation {
                     if (fv != null){
                         data.put("errmsg", errmsg);
                         data.put("errno", errcode);
-                        IObserver observer = fv.observer();
-                        if (observer != null){
-                            observer.set(keys, data);
-                            GeoManager geo = weakGeo.get();
-                            if (geo != null){
-                                geo.removeLocationListener(provider);
+                        GeoManager geo = weakGeo.get();
+                        if (geo != null){
+                            geo.removeLocationListener(provider);
+                            if (geo.isLocationError()){
+                                IObserver observer = fv.observer();
+                                if (observer != null){
+                                    observer.set(keys, data);
+                                }
                             }
                         }
+
                     }
                 }
             });
@@ -117,34 +118,5 @@ public class GeoLocation {
             }
         });
 
-    }
-
-
-    public class GeoListener implements LocationListener,IRecycle{
-
-        @Override
-        public void onLocationChanged(Location location) {
-
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-
-        }
-
-        @Override
-        public void recycle() {
-
-        }
     }
 }

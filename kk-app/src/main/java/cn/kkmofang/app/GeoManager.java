@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.os.Bundle;
 import android.os.Looper;
 import android.support.v4.app.ActivityCompat;
@@ -19,7 +20,6 @@ import java.util.TreeMap;
 
 public class GeoManager implements IRecycle {
     public static final int LocationUpdateInterval = 5 * 1000;
-
 
     private LocationManager lm;
     private Context _context;
@@ -84,7 +84,20 @@ public class GeoManager implements IRecycle {
 
                                 @Override
                                 public void onStatusChanged(String provider, int status, Bundle extras) {
-
+                                    switch (status){
+                                        case LocationProvider.OUT_OF_SERVICE://0
+                                            if (_locationListener != null){
+                                                _locationListener.onError(provider, status, provider + " is out of service");
+                                            }
+                                            break;
+                                        case LocationProvider.TEMPORARILY_UNAVAILABLE://1
+                                            if (_locationListener != null){
+                                                _locationListener.onError(provider, status, provider + " is unavailable");
+                                            }
+                                            break;
+                                        default:
+                                            break;
+                                    }
                                 }
 
                                 @Override
@@ -139,6 +152,10 @@ public class GeoManager implements IRecycle {
                 _locationListeners.remove(key);
             }
         }
+    }
+
+    public boolean isLocationError(){
+        return _locationListeners==null||_locationListeners.isEmpty();
     }
 
 
