@@ -25,6 +25,7 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
+    provided 'com.android.support:appcompat-v7:25.3.1'
     compile project(':kk-view')
     compile project(':kk-script')
     compile project(':kk-duktape')
