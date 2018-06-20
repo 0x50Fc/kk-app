@@ -1,5 +1,10 @@
 package cn.kkmofang.app;
 
+import android.location.Location;
+import android.location.LocationListener;
+import android.os.Bundle;
+import android.util.Log;
+
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Map;
@@ -18,25 +23,59 @@ import cn.kkmofang.view.value.V;
 
 public class GeoLocation {
 
+    private static final String TAG = "GeoLocation";
     public static void getLocation(final WeakReference<Application> a,final String[] keys,final Map<String,Object> data) {
 
-
-        /*
-        {
-            Application v = a.get();
-            if(v != null) {
-            Geo geo = (Geo) app.getRecycle("GeoLocation")
-
-            if(geo == null) {
-                geo = new ...
-                app.setRecycle(geo,"GeoLocation");
+        Application v = a.get();
+        if (v != null){
+            GeoManager geo = (GeoManager) v.getRecycle("GeoLocation");
+            if (geo == null){
+                geo = new GeoManager(v.context());
             }
-                data.put("lat",0);
-                data.put("lng",0);
-                v.observer().set(keys,data);
-            }
+
+            geo.startLocation();
+            final WeakReference<GeoManager> weakGeo = new WeakReference<>(geo);
+            geo.setOnLocationListener(new GeoManager.KKLocationListener() {
+
+                @Override
+                public void onLocation(String provider, Location location) {
+                    if (location != null){
+                        Application fv = a.get();
+                        if (fv != null){
+                            Log.d(TAG, "updateLocation: " + location.getLatitude() + ":" + location.getLongitude() + ":" + provider);
+                            data.put("lat", location.getLatitude());
+                            data.put("lng", location.getLongitude());
+                            IObserver observer = fv.observer();
+                            if (observer != null){
+                                observer.set(keys, data);
+                                GeoManager geo = weakGeo.get();
+                                if (geo != null){
+                                    geo.recycle();
+                                }
+                            }
+                        }
+                    }
+                }
+
+                @Override
+                public void onError(String provider, int errcode, String errmsg) {
+                    Application fv = a.get();
+                    if (fv != null){
+                        data.put("errmsg", errmsg);
+                        data.put("errno", errcode);
+                        IObserver observer = fv.observer();
+                        if (observer != null){
+                            observer.set(keys, data);
+                            GeoManager geo = weakGeo.get();
+                            if (geo != null){
+                                geo.removeLocationListener(provider);
+                            }
+                        }
+                    }
+                }
+            });
+
         }
-        */
 
     }
 
@@ -78,5 +117,34 @@ public class GeoLocation {
             }
         });
 
+    }
+
+
+    public class GeoListener implements LocationListener,IRecycle{
+
+        @Override
+        public void onLocationChanged(Location location) {
+
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+
+        }
+
+        @Override
+        public void recycle() {
+
+        }
     }
 }
