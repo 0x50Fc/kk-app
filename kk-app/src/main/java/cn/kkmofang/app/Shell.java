@@ -373,8 +373,6 @@ public abstract class Shell {
 
             }
 
-            willLoading(url);
-
             final WeakReference<Shell> v = new WeakReference<>(this);
 
             load(url, new AppLoading.OnLoad() {
