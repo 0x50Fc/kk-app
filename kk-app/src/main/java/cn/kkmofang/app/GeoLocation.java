@@ -23,6 +23,7 @@ import cn.kkmofang.view.value.V;
 
 public class GeoLocation {
 
+    private static final String TAG = "GeoLocation";
     public static void getLocation(final WeakReference<Application> a,final String[] keys,final Map<String,Object> data) {
 
         Application v = a.get();
@@ -32,7 +33,10 @@ public class GeoLocation {
                 geo = new GeoManager(v.context());
             }
 
-            geo.startLocation();
+            long timeLimit = 0;
+            if (data != null){
+                timeLimit = V.longValue(data.get("locTimeLimit"), 0);
+            }
             final WeakReference<GeoManager> weakGeo = new WeakReference<>(geo);
             geo.setOnLocationListener(new GeoManager.KKLocationListener() {
 
@@ -43,6 +47,7 @@ public class GeoLocation {
                         if (fv != null){
                             data.put("lat", location.getLatitude());
                             data.put("lng", location.getLongitude());
+
                             IObserver observer = fv.observer();
                             if (observer != null){
                                 observer.set(keys, data);
@@ -75,6 +80,7 @@ public class GeoLocation {
                     }
                 }
             });
+            geo.startLocation(timeLimit);
 
         }
 
