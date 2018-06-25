@@ -128,7 +128,6 @@ public abstract class Shell {
     }
 
     public void setRootActivity(Activity rootActivity) {
-        _activitys.clear();
         if(rootActivity == null) {
             _rootActivity = null;
         } else {
