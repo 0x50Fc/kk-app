@@ -31,6 +31,10 @@ public abstract class ViewContext implements IViewContext {
         return _context;
     }
 
+    public String getAbsolutePath(String path) {
+        return _resource.getAbsolutePath(path);
+    }
+
     abstract public ImageTask getImage(String url, ImageStyle style, ImageCallback callback);
 
     abstract public Drawable getImage(String url, ImageStyle style);

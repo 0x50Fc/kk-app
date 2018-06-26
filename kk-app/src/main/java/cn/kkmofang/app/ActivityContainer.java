@@ -18,7 +18,7 @@ import cn.kkmofang.unity.R;
  * Created by zhanghailong on 2018/4/8.
  */
 
-public class ActivityContainer extends Activity implements Container {
+public class ActivityContainer extends Activity implements Container , IWindowContainer {
 
 
     private Controller _controller;
@@ -33,7 +33,15 @@ public class ActivityContainer extends Activity implements Container {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+        String v = getIntent().getStringExtra("orientation");
+
+        if("landscape".equals(v)) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        } else {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
+
         onCreateDocumentView();
 
         Application app = null;
@@ -140,15 +148,7 @@ public class ActivityContainer extends Activity implements Container {
 
     protected void onRun(Controller controller) {
 
-        Object v = controller.page().get(new String[]{"page", "orientation"});
 
-        if(v != null && v instanceof String) {
-            if("landscape".equals(v)) {
-                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-            } else {
-                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-            }
-        }
     }
 
     @Override
@@ -268,5 +268,26 @@ public class ActivityContainer extends Activity implements Container {
                 }
             });
         }
+    }
+
+    private boolean _recycleWindowContainer = false;
+    private int _obtainWindowCount = 0;
+
+    @Override
+    public void obtainWindowContainer() {
+        _obtainWindowCount ++;
+    }
+
+    @Override
+    public void recycleWindowContainer() {
+        --_obtainWindowCount;
+        if(_recycleWindowContainer && _obtainWindowCount == 0) {
+            finish();
+        }
+    }
+
+    @Override
+    public void setRecycleWindowContainer() {
+        _recycleWindowContainer = true;
     }
 }

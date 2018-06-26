@@ -28,6 +28,11 @@ public class AssetResource implements IResource{
     }
 
     @Override
+    public String getAbsolutePath(String name) {
+        return "asset://" + name;
+    }
+
+    @Override
     public String getString(String name) {
 
         try {

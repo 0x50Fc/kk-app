@@ -177,6 +177,11 @@ public class FileResource implements IResource{
     }
 
     @Override
+    public String getAbsolutePath(String name) {
+        return (new File(_basePath,name)).getAbsolutePath();
+    }
+
+    @Override
     public String getString(String name) {
 
         try {

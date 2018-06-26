@@ -19,7 +19,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 public class GeoManager implements IRecycle {
-    public static final long LocationUpdateInterval = 60 * 60 * 1000;
+    public static final int LocationUpdateInterval = 5 * 1000;
 
     private LocationManager lm;
     private Context _context;
@@ -56,12 +56,7 @@ public class GeoManager implements IRecycle {
     }
 
     private Map<String, LocationListener> _locationListeners;
-    public void startLocation(){
-        startLocation(LocationUpdateInterval);//默认超时时间
-    }
-
-    public void startLocation(long timeLimit) {
-        if (timeLimit <= 0)timeLimit = LocationUpdateInterval;
+    public void startLocation() {
         if (!checkPermissions(Manifest.permission.ACCESS_FINE_LOCATION)
             || !checkPermissions(Manifest.permission.ACCESS_COARSE_LOCATION)){
             if (_locationListener != null){
@@ -119,23 +114,8 @@ public class GeoManager implements IRecycle {
                             });
                         }
 
-                        Location location = lm.getLastKnownLocation(provider);
-                        if (location != null){
-                            long lastFixTime = location.getTime();
-                            if (System.currentTimeMillis() - lastFixTime >= timeLimit){
-                                lm.requestLocationUpdates(provider, timeLimit,
+                        lm.requestLocationUpdates(provider, LocationUpdateInterval,
                         0, _locationListeners.get(provider), Looper.myLooper());
-                            }else {
-                                if (_locationListener != null){
-                                    _locationListener.onLocation(provider, location);
-                                    return;
-                                }
-                            }
-
-                        }else {
-                            lm.requestLocationUpdates(provider, timeLimit,
-                                    0, _locationListeners.get(provider), Looper.myLooper());
-                        }
 
                     }
                 }

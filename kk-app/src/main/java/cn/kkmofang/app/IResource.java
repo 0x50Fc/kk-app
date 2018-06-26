@@ -11,6 +11,8 @@ import java.io.InputStream;
 
 public interface IResource {
 
+    String getAbsolutePath(String name);
+
     String getString(String name);
 
     InputStream open(String name) throws IOException;

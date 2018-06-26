@@ -128,6 +128,7 @@ public abstract class Shell {
     }
 
     public void setRootActivity(Activity rootActivity) {
+        _activitys.clear();
         if(rootActivity == null) {
             _rootActivity = null;
         } else {
@@ -167,7 +168,7 @@ public abstract class Shell {
     public void finishPopActivitys(List<Activity> activities) {
         for(Activity v : activities) {
             if(v instanceof IWindowContainer) {
-
+                ((IWindowContainer) v).setRecycleWindowContainer();
             } else {
                 v.finish();
             }
@@ -372,6 +373,8 @@ public abstract class Shell {
 
             }
 
+            willLoading(url);
+
             final WeakReference<Shell> v = new WeakReference<>(this);
 
             load(url, new AppLoading.OnLoad() {
@@ -462,6 +465,7 @@ public abstract class Shell {
                 Intent i = new Intent(_context, activityClass);
                 i.putExtra("appid", app.id());
                 i.putExtra("action", (Serializable) action);
+                i.putExtra("orientation",V.stringValue(V.get(action,"orientation"),null));
                 container.startActivity(i);
             }
         }

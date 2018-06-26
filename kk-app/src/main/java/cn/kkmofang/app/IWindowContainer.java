@@ -7,4 +7,5 @@ package cn.kkmofang.app;
 public interface IWindowContainer {
     void obtainWindowContainer();
     void recycleWindowContainer();
+    void setRecycleWindowContainer();
 }

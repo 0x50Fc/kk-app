@@ -31,11 +31,15 @@ public class AsyncCaller implements IRecycle {
     private Map<Long,Task> _tasks;
     private long _id;
 
-    public AsyncCaller() {
+    public AsyncCaller(){
+        this(new Handler());
+    }
+
+    public AsyncCaller(Handler handler) {
 
         _id = 0;
         _tasks = new TreeMap<>();
-        handler = new Handler();
+        this.handler = handler;
 
         final WeakReference<AsyncCaller> caller = new WeakReference<AsyncCaller>(this);
 
