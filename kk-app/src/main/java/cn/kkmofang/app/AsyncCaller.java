@@ -27,19 +27,19 @@ public class AsyncCaller implements IRecycle {
     public final IScriptFunction SetIntervalFunc;
     public final IScriptFunction ClearIntervalFunc;
 
-    public final Handler handler;
+    public final ILooper looper;
     private Map<Long,Task> _tasks;
     private long _id;
 
     public AsyncCaller(){
-        this(new Handler());
+        this(new HandlerLooper());
     }
 
-    public AsyncCaller(Handler handler) {
+    public AsyncCaller(ILooper looper) {
 
         _id = 0;
         _tasks = new TreeMap<>();
-        this.handler = handler;
+        this.looper = looper;
 
         final WeakReference<AsyncCaller> caller = new WeakReference<AsyncCaller>(this);
 
@@ -53,7 +53,7 @@ public class AsyncCaller implements IRecycle {
                     return 0;
                 }
 
-                cn.kkmofang.duktape.Context ctx = (cn.kkmofang.duktape.Context) ScriptContext.currentContext();
+                cn.kkmofang.duktape.BasicContext ctx = (cn.kkmofang.duktape.BasicContext) ScriptContext.currentContext();
 
                 int top = ctx.getTop();
 
@@ -91,7 +91,7 @@ public class AsyncCaller implements IRecycle {
                     return 0;
                 }
 
-                cn.kkmofang.duktape.Context ctx = (cn.kkmofang.duktape.Context) ScriptContext.currentContext();
+                cn.kkmofang.duktape.BasicContext ctx = (cn.kkmofang.duktape.BasicContext) ScriptContext.currentContext();
 
                 int top = ctx.getTop();
 
@@ -118,7 +118,7 @@ public class AsyncCaller implements IRecycle {
                     return 0;
                 }
 
-                cn.kkmofang.duktape.Context ctx = (cn.kkmofang.duktape.Context) ScriptContext.currentContext();
+                cn.kkmofang.duktape.BasicContext ctx = (cn.kkmofang.duktape.BasicContext) ScriptContext.currentContext();
 
                 int top = ctx.getTop();
 
@@ -155,7 +155,7 @@ public class AsyncCaller implements IRecycle {
                     return 0;
                 }
 
-                cn.kkmofang.duktape.Context ctx = (cn.kkmofang.duktape.Context) ScriptContext.currentContext();
+                cn.kkmofang.duktape.BasicContext ctx = (cn.kkmofang.duktape.BasicContext) ScriptContext.currentContext();
 
                 int top = ctx.getTop();
 
@@ -196,7 +196,7 @@ public class AsyncCaller implements IRecycle {
     private void add(Task task) {
         if(_tasks != null) {
             _tasks.put(task.id,task);
-            handler.postDelayed(task,task.tv);
+            looper.postDelayed(task,task.tv);
         }
     }
 
@@ -246,7 +246,7 @@ public class AsyncCaller implements IRecycle {
                 return;
             }
 
-            cn.kkmofang.duktape.Context ctx = _fn.context();
+            cn.kkmofang.duktape.BasicContext ctx = _fn.context();
 
             ScriptContext.pushContext(ctx);
 
@@ -254,7 +254,7 @@ public class AsyncCaller implements IRecycle {
 
             if(ctx.isFunction(-1)) {
 
-                if(cn.kkmofang.duktape.Context.DUK_EXEC_SUCCESS != ctx.pcall(0)) {
+                if(cn.kkmofang.duktape.BasicContext.DUK_EXEC_SUCCESS != ctx.pcall(0)) {
                     Log.d(Context.TAG,ctx.getErrorString(-1));
                 }
 
@@ -267,7 +267,7 @@ public class AsyncCaller implements IRecycle {
             if(_repeat && !_canceled && _fn != null) {
                 AsyncCaller caller = _caller.get();
                 if(caller != null) {
-                    caller.handler.postDelayed(this,tv);
+                    caller.looper.postDelayed(this,tv);
                     return;
                 }
             }

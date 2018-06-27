@@ -8,8 +8,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.TreeMap;
 
-import cn.kkmofang.duktape.*;
-import cn.kkmofang.duktape.Context;
+import cn.kkmofang.duktape.Heapptr;
 import cn.kkmofang.script.IScriptFunction;
 import cn.kkmofang.script.IScriptObject;
 import cn.kkmofang.script.ScriptContext;
@@ -21,13 +20,23 @@ import cn.kkmofang.websocket.WebSocket;
 
 public class JSWebSocket extends RecycleContainer implements IScriptObject {
 
+    public final ILooper looper;
+
+    public JSWebSocket() {
+        this(new HandlerLooper());
+    }
+
+    public JSWebSocket(ILooper looper) {
+        this.looper = looper;
+    }
+
     private final static String[] _keys = new String[]{"alloc"};
 
     private final static IScriptFunction alloc = new IScriptFunction() {
         @Override
         public int call() {
 
-            cn.kkmofang.duktape.Context ctx = (cn.kkmofang.duktape.Context) ScriptContext.currentContext();
+            cn.kkmofang.duktape.BasicContext ctx = (cn.kkmofang.duktape.BasicContext) ScriptContext.currentContext();
 
             ctx.pushThis();
 
@@ -48,7 +57,7 @@ public class JSWebSocket extends RecycleContainer implements IScriptObject {
                         protocol = ctx.toString(-top +1);
                     }
 
-                    JSWebSocketObject object = new JSWebSocketObject(url,protocol,v);
+                    JSWebSocketObject object = new JSWebSocketObject(url,protocol,v,v.looper);
 
                     v.addRecycle(object);
 
@@ -89,7 +98,7 @@ public class JSWebSocket extends RecycleContainer implements IScriptObject {
             @Override
             public int call() {
 
-                cn.kkmofang.duktape.Context ctx = (cn.kkmofang.duktape.Context) ScriptContext.currentContext();
+                cn.kkmofang.duktape.BasicContext ctx = (cn.kkmofang.duktape.BasicContext) ScriptContext.currentContext();
 
                 ctx.pushThis();
 
@@ -140,7 +149,7 @@ public class JSWebSocket extends RecycleContainer implements IScriptObject {
             @Override
             public int call() {
 
-                cn.kkmofang.duktape.Context ctx = (cn.kkmofang.duktape.Context) ScriptContext.currentContext();
+                cn.kkmofang.duktape.BasicContext ctx = (cn.kkmofang.duktape.BasicContext) ScriptContext.currentContext();
 
                 ctx.pushThis();
 
@@ -160,7 +169,7 @@ public class JSWebSocket extends RecycleContainer implements IScriptObject {
             @Override
             public int call() {
 
-                cn.kkmofang.duktape.Context ctx = (cn.kkmofang.duktape.Context) ScriptContext.currentContext();
+                cn.kkmofang.duktape.BasicContext ctx = (cn.kkmofang.duktape.BasicContext) ScriptContext.currentContext();
 
                 ctx.pushThis();
 
@@ -199,7 +208,7 @@ public class JSWebSocket extends RecycleContainer implements IScriptObject {
             return _webSocket;
         }
 
-        public JSWebSocketObject(String url,String protocol,JSWebSocket container) {
+        public JSWebSocketObject(String url,String protocol,JSWebSocket container,final ILooper looper) {
 
             _container = new WeakReference<>(container);
 
@@ -210,12 +219,11 @@ public class JSWebSocket extends RecycleContainer implements IScriptObject {
             }
 
             final WeakReference<JSWebSocketObject> v = new WeakReference<>(this);
-            final Handler handler = new Handler();
 
             _webSocket = new WebSocket(URI.create(url), new WebSocket.Listener() {
                 @Override
                 public void onConnect() {
-                    handler.post(new Runnable() {
+                    looper.post(new Runnable() {
                         @Override
                         public void run() {
                             JSWebSocketObject vv = v.get();
@@ -228,7 +236,7 @@ public class JSWebSocket extends RecycleContainer implements IScriptObject {
 
                 @Override
                 public void onMessage(final String message) {
-                    handler.post(new Runnable() {
+                    looper.post(new Runnable() {
                         @Override
                         public void run() {
                             JSWebSocketObject vv = v.get();
@@ -241,7 +249,7 @@ public class JSWebSocket extends RecycleContainer implements IScriptObject {
 
                 @Override
                 public void onMessage(final byte[] data) {
-                    handler.post(new Runnable() {
+                    looper.post(new Runnable() {
                         @Override
                         public void run() {
 
@@ -255,7 +263,7 @@ public class JSWebSocket extends RecycleContainer implements IScriptObject {
 
                 @Override
                 public void onDisconnect(int code, final String reason) {
-                    handler.post(new Runnable() {
+                    looper.post(new Runnable() {
                         @Override
                         public void run() {
 
@@ -272,7 +280,7 @@ public class JSWebSocket extends RecycleContainer implements IScriptObject {
 
                     final String errmsg = error == null ? null : error.getLocalizedMessage();
 
-                    handler.post(new Runnable() {
+                    looper.post(new Runnable() {
                         @Override
                         public void run() {
                             JSWebSocketObject vv = v.get();
@@ -292,23 +300,27 @@ public class JSWebSocket extends RecycleContainer implements IScriptObject {
 
             if (_onopen != null) {
 
-                cn.kkmofang.duktape.Context ctx = _onopen.context();
+                cn.kkmofang.duktape.BasicContext ctx = _onopen.context();
 
-                ScriptContext.pushContext(ctx);
+                if(ctx != null) {
 
-                ctx.pushHeapptr(_onopen.heapptr());
+                    ScriptContext.pushContext(ctx);
 
-                if(ctx.isFunction(-1)) {
+                    ctx.pushHeapptr(_onopen.heapptr());
 
-                    if(ctx.pcall(0) != Context.DUK_EXEC_SUCCESS) {
-                        Log.d(cn.kkmofang.app.Context.TAG,ctx.getErrorString(-1));
+                    if (ctx.isFunction(-1)) {
+
+                        if (ctx.pcall(0) != Context.DUK_EXEC_SUCCESS) {
+                            Log.d(cn.kkmofang.app.Context.TAG, ctx.getErrorString(-1));
+                        }
+
                     }
 
+                    ctx.pop();
+
+                    ScriptContext.popContext();
+
                 }
-
-                ctx.pop();
-
-                ScriptContext.popContext();
             }
         }
 
@@ -316,25 +328,29 @@ public class JSWebSocket extends RecycleContainer implements IScriptObject {
 
             if (_ondata != null) {
 
-                cn.kkmofang.duktape.Context ctx = _ondata.context();
+                cn.kkmofang.duktape.BasicContext ctx = _ondata.context();
 
-                ScriptContext.pushContext(ctx);
+                if(ctx != null) {
 
-                ctx.pushHeapptr(_ondata.heapptr());
+                    ScriptContext.pushContext(ctx);
 
-                if(ctx.isFunction(-1)) {
+                    ctx.pushHeapptr(_ondata.heapptr());
 
-                    ctx.push(text);
+                    if (ctx.isFunction(-1)) {
 
-                    if(ctx.pcall(1) != Context.DUK_EXEC_SUCCESS) {
-                        Log.d(cn.kkmofang.app.Context.TAG,ctx.getErrorString(-1));
+                        ctx.push(text);
+
+                        if (ctx.pcall(1) != Context.DUK_EXEC_SUCCESS) {
+                            Log.d(cn.kkmofang.app.Context.TAG, ctx.getErrorString(-1));
+                        }
+
                     }
 
+                    ctx.pop();
+
+                    ScriptContext.popContext();
+
                 }
-
-                ctx.pop();
-
-                ScriptContext.popContext();
             }
 
         }
@@ -343,25 +359,29 @@ public class JSWebSocket extends RecycleContainer implements IScriptObject {
 
             if (_ondata != null) {
 
-                cn.kkmofang.duktape.Context ctx = _ondata.context();
+                cn.kkmofang.duktape.BasicContext ctx = _ondata.context();
 
-                ScriptContext.pushContext(ctx);
+                if(ctx != null) {
 
-                ctx.pushHeapptr(_ondata.heapptr());
+                    ScriptContext.pushContext(ctx);
 
-                if(ctx.isFunction(-1)) {
+                    ctx.pushHeapptr(_ondata.heapptr());
 
-                    ctx.push(data);
+                    if (ctx.isFunction(-1)) {
 
-                    if(ctx.pcall(1) != Context.DUK_EXEC_SUCCESS) {
-                        Log.d(cn.kkmofang.app.Context.TAG,ctx.getErrorString(-1));
+                        ctx.push(data);
+
+                        if (ctx.pcall(1) != Context.DUK_EXEC_SUCCESS) {
+                            Log.d(cn.kkmofang.app.Context.TAG, ctx.getErrorString(-1));
+                        }
+
                     }
 
+                    ctx.pop();
+
+                    ScriptContext.popContext();
+
                 }
-
-                ctx.pop();
-
-                ScriptContext.popContext();
             }
 
         }
@@ -370,25 +390,29 @@ public class JSWebSocket extends RecycleContainer implements IScriptObject {
 
             if (_onclose != null) {
 
-                cn.kkmofang.duktape.Context ctx = _onclose.context();
+                cn.kkmofang.duktape.BasicContext ctx = _onclose.context();
 
-                ScriptContext.pushContext(ctx);
+                if(ctx != null) {
 
-                ctx.pushHeapptr(_onclose.heapptr());
+                    ScriptContext.pushContext(ctx);
 
-                if(ctx.isFunction(-1)) {
+                    ctx.pushHeapptr(_onclose.heapptr());
 
-                    ctx.push(errmsg);
+                    if (ctx.isFunction(-1)) {
 
-                    if(ctx.pcall(1) != Context.DUK_EXEC_SUCCESS) {
-                        Log.d(cn.kkmofang.app.Context.TAG,ctx.getErrorString(-1));
+                        ctx.push(errmsg);
+
+                        if (ctx.pcall(1) != Context.DUK_EXEC_SUCCESS) {
+                            Log.d(cn.kkmofang.app.Context.TAG, ctx.getErrorString(-1));
+                        }
+
                     }
 
+                    ctx.pop();
+
+                    ScriptContext.popContext();
+
                 }
-
-                ctx.pop();
-
-                ScriptContext.popContext();
             }
 
             JSWebSocket container = _container.get();

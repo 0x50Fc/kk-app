@@ -318,12 +318,12 @@ public class View {
     }
 
     public static void runFunc(Heapptr func,Element e,IObserver data) {
-        cn.kkmofang.duktape.Context ctx = func.context();
+        cn.kkmofang.duktape.BasicContext ctx = func.context();
         if(ctx != null) {
             ctx.pushHeapptr(func.heapptr());
             ctx.pushObject(e);
             ctx.pushObject(data);
-            if(ctx.pcall(2) != cn.kkmofang.duktape.Context.DUK_EXEC_SUCCESS) {
+            if(ctx.pcall(2) != cn.kkmofang.duktape.BasicContext.DUK_EXEC_SUCCESS) {
                 Log.d(Context.TAG,ctx.getErrorString(-1));
             }
             ctx.pop();
@@ -351,7 +351,7 @@ public class View {
         @Override
         public int call() {
 
-            cn.kkmofang.duktape.Context ctx = (cn.kkmofang.duktape.Context) ScriptContext.currentContext();
+            cn.kkmofang.duktape.BasicContext ctx = (cn.kkmofang.duktape.BasicContext) ScriptContext.currentContext();
 
             int top = ctx.getTop();
 
