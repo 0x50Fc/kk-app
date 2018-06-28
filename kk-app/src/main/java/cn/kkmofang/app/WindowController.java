@@ -29,10 +29,11 @@ public class WindowController extends Dialog {
     private DocumentView _documentView;
     private Controller _controller;
     private IWindowContainer _container;
+    private boolean _fullScreen = false;
 
     protected void onCreateViewElement(ViewElement element) {
 
-        {
+        if(!_fullScreen) {
             float top = element.padding.top.floatValue(0, 0) / Pixel.UnitPX;
             Pixel p = new Pixel();
             p.type = Pixel.Type.PX;
@@ -49,14 +50,23 @@ public class WindowController extends Dialog {
 
     public WindowController(android.content.Context context, Controller controller) {
         super(context,R.style.KKWindow);
-        _controller = controller;
-
-        setContentView(R.layout.kk_document);
 
         if(context instanceof IWindowContainer) {
             _container = ((IWindowContainer) context);
             _container.obtainWindowContainer();
+            if(_container.isFullScreenWindowContainer()) {
+                _fullScreen = true;
+                Window window = getWindow();
+                requestWindowFeature(Window.FEATURE_NO_TITLE);
+                int flag= WindowManager.LayoutParams.FLAG_FULLSCREEN;
+                window.addFlags(flag);
+            }
         }
+
+
+        _controller = controller;
+        setContentView(R.layout.kk_document);
+
 
         final WeakReference<WindowController> v = new WeakReference<>(this);
 

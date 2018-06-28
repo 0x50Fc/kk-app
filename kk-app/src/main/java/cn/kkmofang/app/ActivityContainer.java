@@ -3,6 +3,8 @@ package cn.kkmofang.app;
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.view.Window;
+import android.view.WindowManager;
 
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
@@ -30,16 +32,33 @@ public class ActivityContainer extends Activity implements Container , IWindowCo
         _documentView = (DocumentView) findViewById(R.id.kk_documentView);
     }
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        String v = getIntent().getStringExtra("orientation");
+        {
+            String v = getIntent().getStringExtra("orientation");
 
-        if("landscape".equals(v)) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        } else {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            if ("landscape".equals(v)) {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            } else {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            }
+        }
+
+
+        {
+            Boolean v = getIntent().getBooleanExtra("fullScreen",getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
+            if(v) {
+                Window window = getWindow();
+                requestWindowFeature(Window.FEATURE_NO_TITLE);
+                int flag= WindowManager.LayoutParams.FLAG_FULLSCREEN;
+                window.addFlags(flag);
+                _fullScreenWindowContainer = true;
+            }
+
         }
 
         onCreateDocumentView();
@@ -289,5 +308,12 @@ public class ActivityContainer extends Activity implements Container , IWindowCo
     @Override
     public void setRecycleWindowContainer() {
         _recycleWindowContainer = true;
+    }
+
+    private boolean _fullScreenWindowContainer = false;
+
+    @Override
+    public boolean isFullScreenWindowContainer() {
+        return _fullScreenWindowContainer;
     }
 }

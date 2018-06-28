@@ -8,4 +8,5 @@ public interface IWindowContainer {
     void obtainWindowContainer();
     void recycleWindowContainer();
     void setRecycleWindowContainer();
+    boolean isFullScreenWindowContainer();
 }

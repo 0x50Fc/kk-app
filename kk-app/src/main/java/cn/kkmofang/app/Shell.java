@@ -465,7 +465,31 @@ public abstract class Shell {
                 Intent i = new Intent(_context, activityClass);
                 i.putExtra("appid", app.id());
                 i.putExtra("action", (Serializable) action);
-                i.putExtra("orientation",V.stringValue(V.get(action,"orientation"),null));
+
+                {
+                    Intent from = container.getIntent();
+                    if(from.hasExtra("orientation")) {
+                        i.putExtra("orientation",from.getStringExtra("orientation"));
+                    }
+                    if(from.hasExtra("fullScreen")) {
+                        i.putExtra("fullScreen",from.getBooleanExtra("fullScreen",true));
+                    }
+                }
+
+                {
+                    Object v = V.get(action,"orientation");
+                    if(v != null) {
+                        i.putExtra("orientation",V.stringValue(v,""));
+                    }
+                }
+
+                {
+                    Object v = V.get(action, "fullScreen");
+                    if (v != null) {
+                        i.putExtra("fullScreen", V.booleanValue(v, true));
+                    }
+                }
+
                 container.startActivity(i);
             }
         }

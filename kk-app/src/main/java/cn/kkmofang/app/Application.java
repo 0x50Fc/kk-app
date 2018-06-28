@@ -158,6 +158,35 @@ public class Application extends RecycleContainer {
         _jsContext.pushFunction(View.Func);
         _jsContext.putProp(-3);
 
+        _jsContext.push("app");
+        _jsContext.pushObject(_jsObserver);
+        _jsContext.putProp(-3);
+
+        _jsContext.push("setTimeout");
+        _jsContext.pushFunction(_caller.SetTimeoutFunc);
+        _jsContext.putProp(-3);
+
+        _jsContext.push("clearTimeout");
+        _jsContext.pushFunction(_caller.ClearTimeoutFunc);
+        _jsContext.putProp(-3);
+
+        _jsContext.push("setInterval");
+        _jsContext.pushFunction(_caller.SetIntervalFunc);
+        _jsContext.putProp(-3);
+
+        _jsContext.push("clearInterval");
+        _jsContext.pushFunction(_caller.ClearIntervalFunc);
+        _jsContext.putProp(-3);
+
+        _jsContext.push("WebSocket");
+        _jsContext.pushObject(_jsWebSocket);
+        _jsContext.putProp(-3);
+
+        _jsContext.push("http");
+        _jsContext.pushObject(jsHttp());
+        _jsContext.putProp(-3);
+
+
         _jsContext.pop();
 
         {
