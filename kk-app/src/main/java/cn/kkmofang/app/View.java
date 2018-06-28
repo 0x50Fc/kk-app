@@ -319,14 +319,18 @@ public class View {
 
     public static void runFunc(Heapptr func,Element e,IObserver data) {
         cn.kkmofang.duktape.BasicContext ctx = func.context();
-        if(ctx != null) {
+        if(ctx != null && func.heapptr() !=0 ) {
+            ScriptContext.pushContext(ctx);
             ctx.pushHeapptr(func.heapptr());
-            ctx.pushObject(e);
-            ctx.pushObject(data);
-            if(ctx.pcall(2) != cn.kkmofang.duktape.BasicContext.DUK_EXEC_SUCCESS) {
-                Log.d(Context.TAG,ctx.getErrorString(-1));
+            if(ctx.isFunction(-1)) {
+                ctx.pushObject(e);
+                ctx.pushObject(data);
+                if (ctx.pcall(2) != cn.kkmofang.duktape.BasicContext.DUK_EXEC_SUCCESS) {
+                    Log.d(Context.TAG, ctx.getErrorString(-1));
+                }
             }
             ctx.pop();
+            ScriptContext.popContext();
         }
     }
 

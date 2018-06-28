@@ -5,16 +5,13 @@ import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
-
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
-
 import cn.kkmofang.observer.IObserver;
 import cn.kkmofang.observer.Listener;
 import cn.kkmofang.observer.Observer;
 import cn.kkmofang.view.DocumentView;
 import cn.kkmofang.view.ViewElement;
-import cn.kkmofang.unity.R;
 
 /**
  * Created by zhanghailong on 2018/4/8.
@@ -28,8 +25,8 @@ public class ActivityContainer extends Activity implements Container , IWindowCo
     protected DocumentView _documentView;
 
     protected void onCreateDocumentView() {
-        setContentView(R.layout.kk_document);
-        _documentView = (DocumentView) findViewById(R.id.kk_documentView);
+        setContentView(cn.kkmofang.unity.R.layout.kk_document);
+        _documentView = (DocumentView) findViewById(cn.kkmofang.unity.R.id.kk_documentView);
     }
 
 
@@ -260,7 +257,7 @@ public class ActivityContainer extends Activity implements Container , IWindowCo
                 public void onChanged(IObserver observer, String[] changedKeys, Object value, ActivityContainer weakObject) {
 
                     if(weakObject != null && value != null) {
-                        weakObject.finish();
+                        weakObject.setRecycleWindowContainer();
                     }
                 }
             },this, Observer.PRIORITY_NORMAL,false);
@@ -308,6 +305,9 @@ public class ActivityContainer extends Activity implements Container , IWindowCo
     @Override
     public void setRecycleWindowContainer() {
         _recycleWindowContainer = true;
+        if(_obtainWindowCount == 0) {
+            finish();
+        }
     }
 
     private boolean _fullScreenWindowContainer = false;
