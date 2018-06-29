@@ -176,7 +176,7 @@ public class WindowController extends Dialog {
         if(_documentView != null) {
             ViewElement element = _documentView.element();
             if(element != null) {
-                element.recycleView();
+                element.recycle();
             }
             _documentView.setElement(null);
             _documentView = null;

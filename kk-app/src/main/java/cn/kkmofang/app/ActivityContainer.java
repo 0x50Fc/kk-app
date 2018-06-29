@@ -81,7 +81,6 @@ public class ActivityContainer extends Activity implements Container , IWindowCo
     protected void onStart() {
         super.onStart();
 
-
         if(_documentView != null) {
             ViewElement element = _documentView.element();
             if(element != null) {
@@ -115,8 +114,8 @@ public class ActivityContainer extends Activity implements Container , IWindowCo
         if(_documentView != null) {
             ViewElement element = _documentView.element();
             if(element != null) {
-                element.recycleView();
                 element.onDestroy(this);
+                element.recycle();
             }
         }
 

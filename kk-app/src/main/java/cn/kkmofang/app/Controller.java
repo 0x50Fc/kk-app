@@ -150,14 +150,6 @@ public class Controller extends RecycleContainer {
     }
 
     public void recycle() {
-        if(_page != null) {
-            _page.off(new String[]{},null,null);
-            _page = null;
-        }
-        if(_http != null) {
-            _http.cancel();
-            _http = null;
-        }
         if(_jsPage != null) {
             _jsPage.recycle();
             _jsPage = null;
@@ -165,6 +157,14 @@ public class Controller extends RecycleContainer {
         if(_jsApp != null) {
             _jsApp.recycle();
             _jsApp = null;
+        }
+        if(_page != null) {
+            _page.off(new String[]{},null,null);
+            _page = null;
+        }
+        if(_http != null) {
+            _http.cancel();
+            _http = null;
         }
         if(_jsWebSocket != null) {
             _jsWebSocket.recycle();
