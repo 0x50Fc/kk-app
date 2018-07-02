@@ -18,13 +18,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-public class GeoManager implements IRecycle {
+public class GeoManager implements IGeoManager {
     public static final long LocationUpdateInterval = 60 * 60 * 1000;
 
     private LocationManager lm;
+    private ILocationListener _locationListener;
     private Context _context;
 
-    private KKLocationListener _locationListener = null;
 
     public GeoManager(Context context) {
         if (context != null) {
@@ -39,9 +39,6 @@ public class GeoManager implements IRecycle {
         }
     }
 
-    public void setOnLocationListener(KKLocationListener _kkLocationListener) {
-        this._locationListener = _kkLocationListener;
-    }
 
     private boolean checkPermissions(String pName) {
         boolean p = false;
@@ -56,16 +53,19 @@ public class GeoManager implements IRecycle {
     }
 
     private Map<String, LocationListener> _locationListeners;
-    public void startLocation(){
-        startLocation(LocationUpdateInterval);//默认超时时间
+    @Override
+    public void startLocation(ILocationListener listener){
+        startLocation(LocationUpdateInterval, listener);//默认超时时间
     }
 
-    public void startLocation(long timeLimit) {
+    @Override
+    public void startLocation(long timeLimit, ILocationListener listener) {
+        _locationListener = listener;
         if (timeLimit <= 0)timeLimit = LocationUpdateInterval;
         if (!checkPermissions(Manifest.permission.ACCESS_FINE_LOCATION)
             || !checkPermissions(Manifest.permission.ACCESS_COARSE_LOCATION)){
             if (_locationListener != null){
-                _locationListener.onError(null, -1, "location permission is rejected");
+                _locationListener.onError( -1, "location permission is rejected");
             }
             return;
         }
@@ -83,7 +83,7 @@ public class GeoManager implements IRecycle {
                                 @Override
                                 public void onLocationChanged(Location location) {
                                     if (_locationListener != null){
-                                        _locationListener.onLocation(provider, location);
+                                        _locationListener.onLocation(location.getLatitude(), location.getLongitude());
                                     }
                                 }
 
@@ -92,12 +92,14 @@ public class GeoManager implements IRecycle {
                                     switch (status){
                                         case LocationProvider.OUT_OF_SERVICE://0
                                             if (_locationListener != null){
-                                                _locationListener.onError(provider, status, provider + " is out of service");
+                                                _locationListener.onError(status, provider + " is out of service");
+                                                removeLocationListener(provider);
                                             }
                                             break;
                                         case LocationProvider.TEMPORARILY_UNAVAILABLE://1
                                             if (_locationListener != null){
-                                                _locationListener.onError(provider, status, provider + " is unavailable");
+                                                _locationListener.onError(status, provider + " is unavailable");
+                                                removeLocationListener(provider);
                                             }
                                             break;
                                         default:
@@ -113,7 +115,8 @@ public class GeoManager implements IRecycle {
                                 @Override
                                 public void onProviderDisabled(String provider) {
                                     if (_locationListener != null){
-                                        _locationListener.onError(provider, -2, provider + " is disabled");
+                                        _locationListener.onError(-2, provider + " is disabled");
+                                        removeLocationListener(provider);
                                     }
                                 }
                             });
@@ -127,7 +130,7 @@ public class GeoManager implements IRecycle {
                         0, _locationListeners.get(provider), Looper.myLooper());
                             }else {
                                 if (_locationListener != null){
-                                    _locationListener.onLocation(provider, location);
+                                    _locationListener.onLocation(location.getLatitude(), location.getLongitude());
                                     return;
                                 }
                             }
@@ -174,6 +177,7 @@ public class GeoManager implements IRecycle {
         }
     }
 
+    @Override
     public boolean isLocationError(){
         return _locationListeners==null||_locationListeners.isEmpty();
     }
@@ -184,11 +188,5 @@ public class GeoManager implements IRecycle {
         removeLocationListeners();
         _locationListener = null;
         lm = null;
-    }
-
-    public interface KKLocationListener{
-        void onLocation(String provider, Location location);
-
-        void onError(String provider, int errcode, String errmsg);
     }
 }
