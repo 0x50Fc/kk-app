@@ -1,6 +1,7 @@
 package cn.kkmofang.app;
 
 import android.os.Handler;
+import android.renderscript.Script;
 import android.util.Log;
 
 import java.io.File;
@@ -13,6 +14,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import cn.kkmofang.http.HttpOptions;
+import cn.kkmofang.script.ScriptContext;
 import cn.kkmofang.view.value.V;
 
 /**
@@ -20,6 +22,9 @@ import cn.kkmofang.view.value.V;
  */
 
 public class AppLoading {
+
+    private final static String kSkipLocalFiles = "_skipLocalFiles";
+
 
     public final static Charset UTF8 = Charset.forName("UTF-8");
 
@@ -112,7 +117,8 @@ public class AppLoading {
         }
 
         if(V.get(appInfo,"md5") != null
-                && version.equals(V.stringValue(V.get(appInfo,"version"),null))) {
+                && version.equals(V.stringValue(V.get(appInfo,"version"),null))
+                && !V.booleanValue(V.get(appInfo,kSkipLocalFiles),false)) {
 
             String ver1 = V.stringValue(V.get(appInfo,"ver"),null);
             String ver2 = V.stringValue(V.get(data,"ver"),null);
@@ -390,6 +396,14 @@ public class AppLoading {
                         });
 
                     } else {
+
+                        Object appInfo = _http.decodeJSON(FileResource.getString(new File(basePath,"app.json")));
+
+                        if(appInfo != null) {
+                            ScriptContext.set(appInfo,kSkipLocalFiles,true);
+                            String data = v._http.encodeJSON(appInfo);
+                            FileResource.setContent(new File(basePath,"app.json"),data);
+                        }
 
                         FileResource.deleteDir(tPath);
 
