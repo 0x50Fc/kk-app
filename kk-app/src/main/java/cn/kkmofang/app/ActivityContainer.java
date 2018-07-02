@@ -2,16 +2,25 @@ package cn.kkmofang.app;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
+import android.support.annotation.NonNull;
+import java.io.Serializable;
+import java.lang.ref.WeakReference;
+import java.util.Map;
+import java.util.TreeMap;
 import cn.kkmofang.observer.IObserver;
 import cn.kkmofang.observer.Listener;
 import cn.kkmofang.observer.Observer;
 import cn.kkmofang.view.DocumentView;
 import cn.kkmofang.view.ViewElement;
+
+import static cn.kkmofang.app.PermissionsProtocol.STATUS_CANCEL;
+import static cn.kkmofang.app.PermissionsProtocol.STATUS_OK;
 
 /**
  * Created by zhanghailong on 2018/4/8.
@@ -163,6 +172,17 @@ public class ActivityContainer extends Activity implements Container , IWindowCo
 
     protected void onRun(Controller controller) {
 
+        {
+            Object v = controller.page().get(new String[]{"page", "orientation"});
+
+            if (v != null && v instanceof String) {
+                if ("landscape".equals(v)) {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                } else {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                }
+            }
+        }
 
     }
 
@@ -285,6 +305,7 @@ public class ActivityContainer extends Activity implements Container , IWindowCo
         }
     }
 
+
     private boolean _recycleWindowContainer = false;
     private int _obtainWindowCount = 0;
 
@@ -315,4 +336,24 @@ public class ActivityContainer extends Activity implements Container , IWindowCo
     public boolean isFullScreenWindowContainer() {
         return _fullScreenWindowContainer;
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        PermissionsProtocol.PermissionCode p = PermissionsProtocol.PermissionCode.vOf(requestCode);
+        if (p != PermissionsProtocol.PermissionCode.NONE){
+            boolean granted = true;
+            for (int result : grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED){
+                    granted = false;
+                }
+            }
+            if(_application != null) {
+                Map<String,Object> data = new TreeMap<>();
+                data.put(p.getPname(), granted?STATUS_OK:STATUS_CANCEL);
+                _application.observer().set(new String[]{"permissions","result"},data);
+            }
+        }
+    }
+
 }

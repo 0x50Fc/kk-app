@@ -45,7 +45,7 @@ public abstract class Shell {
     private Map<String,Object> _query;
 
     static {
-        GeoLocation.openlibs();
+        PermissionsProtocol.openlibs();
     }
 
     public void setQuery(Map<String,Object> query) {
