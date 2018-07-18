@@ -565,7 +565,7 @@ public abstract class Shell {
             }
         },app, Observer.PRIORITY_NORMAL,false);
 
-        app.observer().on(new String[]{"action", "update"}, new Listener<Application>() {
+        app.observer().on(new String[]{"app", "update"}, new Listener<Application>() {
             @Override
             public void onChanged(IObserver observer, String[] changedKeys, Object value, Application weakObject) {
 
