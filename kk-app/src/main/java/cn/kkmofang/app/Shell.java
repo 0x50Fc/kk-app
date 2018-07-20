@@ -548,7 +548,7 @@ public abstract class Shell {
             }
         } else if(path != null){
 
-            Activity container = rootActivity();
+            Activity container = topActivity();
 
             if(container == null && pops != null) {
                 for(Activity v : pops) {
