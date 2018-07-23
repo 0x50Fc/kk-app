@@ -248,6 +248,10 @@ public class AsyncCaller implements IRecycle {
 
             cn.kkmofang.duktape.BasicContext ctx = _fn.context();
 
+            if(ctx == null) {
+                return;
+            }
+
             ScriptContext.pushContext(ctx);
 
             ctx.pushHeapptr(_fn.heapptr());
