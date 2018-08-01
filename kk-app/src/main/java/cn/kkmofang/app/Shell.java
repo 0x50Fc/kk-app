@@ -544,7 +544,7 @@ public abstract class Shell {
 
         } else if("app".equals(type)) {
             if(url != null) {
-                open(url,ScriptContext.get(action,"query"));
+                open(url,ScriptContext.get(action,"query"),ScriptContext.booleanValue(ScriptContext.get(action,"checkUpdate"),false));
             }
         } else if(path != null){
 
