@@ -116,9 +116,11 @@ public class AppLoading {
             }
         }
 
+        boolean skipLocalFiles = V.booleanValue(V.get(appInfo,kSkipLocalFiles),false);
+
         if(V.get(appInfo,"md5") != null
                 && version.equals(V.stringValue(V.get(appInfo,"version"),null))
-                && !V.booleanValue(V.get(appInfo,kSkipLocalFiles),false)) {
+                && !skipLocalFiles) {
 
             String ver1 = V.stringValue(V.get(appInfo,"ver"),null);
             String ver2 = V.stringValue(V.get(data,"ver"),null);
@@ -161,11 +163,11 @@ public class AppLoading {
         File basePath = ((new File(new File(_path),version)));
         File tPath = new File(_path + "_" + version + "_" + ver);
 
-        itemLoad(0,(List<Object>) items,data,vers,basePath,tPath);
+        itemLoad(0,(List<Object>) items,data,vers,basePath,tPath,skipLocalFiles);
 
     }
 
-    protected void itemLoad(final int index, final List<Object> items, final Object appInfo, final Map<String,String> vers, final File basePath, final File tPath) {
+    protected void itemLoad(final int index, final List<Object> items, final Object appInfo, final Map<String,String> vers, final File basePath, final File tPath, final boolean skipLocalFiles) {
 
         onProgress(index,items != null ? items.size() : 0);
 
@@ -190,7 +192,7 @@ public class AppLoading {
                         public void run() {
                             AppLoading v = loading.get();
                             if(v != null) {
-                                v.itemLoad(index + 1, items,appInfo,vers,basePath,tPath);
+                                v.itemLoad(index + 1, items,appInfo,vers,basePath,tPath,skipLocalFiles);
                             }
                         }
                     });
@@ -208,7 +210,7 @@ public class AppLoading {
 
                 if(vers == null || ( vers.containsKey(path) && vers.get(path).equals(ver))) {
 
-                    if(topath.exists()) {
+                    if(!skipLocalFiles && topath.exists()) {
                         FileResource.mkdir(tpath);
                         FileResource.copy(topath,tpath);
                         _handler.post(new Runnable() {
@@ -216,7 +218,7 @@ public class AppLoading {
                             public void run() {
                                 AppLoading v = loading.get();
                                 if(v != null) {
-                                    v.itemLoad(index + 1, items,appInfo,vers,basePath,tPath);
+                                    v.itemLoad(index + 1, items,appInfo,vers,basePath,tPath,skipLocalFiles);
                                 }
                             }
                         });
@@ -236,7 +238,7 @@ public class AppLoading {
                     public void run() {
                         AppLoading v = loading.get();
                         if(v != null) {
-                            v.itemLoad(index + 1, items,appInfo,vers,basePath,tPath);
+                            v.itemLoad(index + 1, items,appInfo,vers,basePath,tPath,skipLocalFiles);
                         }
                     }
                 });
@@ -285,7 +287,7 @@ public class AppLoading {
                         f.renameTo(f_tpath);
                         AppLoading v = loading.get();
                         if(v != null) {
-                            v.itemLoad(index + 1, items,appInfo,vers,basePath,tPath);
+                            v.itemLoad(index + 1, items,appInfo,vers,basePath,tPath,skipLocalFiles);
                         }
                     }
                 }
