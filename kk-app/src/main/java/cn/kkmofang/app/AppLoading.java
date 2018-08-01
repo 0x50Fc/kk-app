@@ -305,6 +305,7 @@ public class AppLoading {
 
     protected void verify(final List<Object> items, final Object appInfo, final File basePath, final File tPath) {
 
+        final String path = _path;
         final String md5 = V.stringValue(V.get(appInfo,"md5"),null);
 
         final WeakReference<AppLoading> loading = new WeakReference<AppLoading>(this);
@@ -397,12 +398,12 @@ public class AppLoading {
 
                     } else {
 
-                        Object appInfo = _http.decodeJSON(FileResource.getString(new File(basePath,"app.json")));
+                        Object appInfo = _http.decodeJSON(FileResource.getString(new File(path,"app.json")));
 
                         if(appInfo != null) {
                             ScriptContext.set(appInfo,kSkipLocalFiles,true);
                             String data = v._http.encodeJSON(appInfo);
-                            FileResource.setContent(new File(basePath,"app.json"),data);
+                            FileResource.setContent(new File(path,"app.json"),data);
                         }
 
                         FileResource.deleteDir(tPath);
