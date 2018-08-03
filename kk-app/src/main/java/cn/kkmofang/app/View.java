@@ -51,6 +51,7 @@ public class View {
         _elements.put("anim:opacity",AnimationElement.Opacity.class);
         _elements.put("audio",AudioElement.class);
         _elements.put("webview",WebViewElement.class);
+        _elements.put("loading", LoadingElement.class);
     }
 
     public static void setElementClass(String name,Class<?> elementClass) {
