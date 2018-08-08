@@ -283,8 +283,10 @@ public class AppLoading {
                     } else {
                         FileResource.mkdir(f_tpath);
                         f_tpath.delete();
-                        File f = new File((String) data);
-                        f.renameTo(f_tpath);
+                        if (data != null){
+                            File f = new File((String) data);
+                            f.renameTo(f_tpath);
+                        }
                         AppLoading v = loading.get();
                         if(v != null) {
                             v.itemLoad(index + 1, items,appInfo,vers,basePath,tPath,skipLocalFiles);
