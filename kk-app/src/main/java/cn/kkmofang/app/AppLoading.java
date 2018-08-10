@@ -274,11 +274,11 @@ public class AppLoading {
             options.onload = new HttpOptions.OnLoad() {
                 @Override
                 public void on(Object data, Exception error, Object weakObject) {
-                    if(error != null) {
+                    if(error != null || data == null) {
                         FileResource.deleteDir(tPath);
                         AppLoading v = loading.get();
                         if(v != null) {
-                            v.onError(error);
+                            v.onError(error == null ? new Exception("文件下载错误") : error);
                         }
                     } else {
                         FileResource.mkdir(f_tpath);

@@ -3,6 +3,7 @@ package cn.kkmofang.app;
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
@@ -152,6 +153,14 @@ public class ActivityContainer extends Activity implements Container , IWindowCo
 
     }
 
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        if(_documentView != null) {
+            _documentView.setNeedsLayout(false);
+        }
+    }
+
     @Override
     public boolean isOpened() {
         return _controller != null;
@@ -172,17 +181,6 @@ public class ActivityContainer extends Activity implements Container , IWindowCo
 
     protected void onRun(Controller controller) {
 
-        {
-            Object v = controller.page().get(new String[]{"page", "orientation"});
-
-            if (v != null && v instanceof String) {
-                if ("landscape".equals(v)) {
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                } else {
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                }
-            }
-        }
 
     }
 
