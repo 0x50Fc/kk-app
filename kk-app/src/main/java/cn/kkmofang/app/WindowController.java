@@ -6,15 +6,21 @@ import android.content.*;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
+import java.util.List;
+import java.util.Map;
+
 import cn.kkmofang.observer.IObserver;
 import cn.kkmofang.observer.Listener;
 import cn.kkmofang.observer.Observer;
+import cn.kkmofang.script.ScriptContext;
 import cn.kkmofang.view.DocumentView;
 import cn.kkmofang.unity.R;
 import cn.kkmofang.view.ViewElement;
@@ -50,7 +56,6 @@ public class WindowController extends Dialog {
 
     public WindowController(android.content.Context context, Controller controller) {
         super(context,R.style.KKWindow);
-
         if(context instanceof IWindowContainer) {
             _container = ((IWindowContainer) context);
             _container.obtainWindowContainer();
@@ -189,5 +194,28 @@ public class WindowController extends Dialog {
 
     }
 
+    public boolean interceptBack(int keyCode){
 
+        if (keyCode != KeyEvent.KEYCODE_BACK)return false;
+        IObserver page = _controller==null?null:_controller.page();
+        if (page != null){
+            Object v = page.get(new String[]{"page","action","close"});
+            if(v != null && v instanceof Map) {
+                Object keys = ScriptContext.get(v,"keys");
+                Object data = ScriptContext.get(v,"data");
+                if(keys != null && keys instanceof List) {
+                    String[] ks = ((List<String>) keys).toArray(new String[ ((List<String>) keys).size()]);
+                    page.set(ks,data);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        return interceptBack(keyCode) || super.onKeyUp(keyCode, event);
+    }
 }

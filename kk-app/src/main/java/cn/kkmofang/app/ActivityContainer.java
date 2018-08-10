@@ -29,7 +29,7 @@ import static cn.kkmofang.app.PermissionsProtocol.STATUS_OK;
 public class ActivityContainer extends Activity implements Container , IWindowContainer {
 
 
-    private Controller _controller;
+    protected Controller _controller;
 
     protected DocumentView _documentView;
 
