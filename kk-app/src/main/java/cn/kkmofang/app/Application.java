@@ -17,6 +17,7 @@ import cn.kkmofang.observer.Observer;
 import cn.kkmofang.script.IScriptFunction;
 import cn.kkmofang.script.ScriptContext;
 import cn.kkmofang.view.Element;
+import cn.kkmofang.view.IViewApplication;
 import cn.kkmofang.view.IViewContext;
 import cn.kkmofang.view.ViewContext;
 import cn.kkmofang.unity.R;
@@ -25,7 +26,7 @@ import cn.kkmofang.unity.R;
  * Created by zhanghailong on 2018/3/12.
  */
 
-public class Application extends RecycleContainer {
+public class Application extends RecycleContainer implements IViewApplication {
 
     public final static double Kernel = 1.0;
     private static long _autoId = 0;
@@ -51,6 +52,7 @@ public class Application extends RecycleContainer {
         _resource = resource;
         _context = context;
         _viewContext = viewContext;
+        _viewContext.setViewApplication(this);
         _id = ++ _autoId;
 
         _applications.put(_id,new WeakReference<>(this));

@@ -52,6 +52,7 @@ public class View {
         _elements.put("audio",AudioElement.class);
         _elements.put("webview",WebViewElement.class);
         _elements.put("loading", LoadingElement.class);
+        _elements.put("page", PageElement.class);
     }
 
     public static void setElementClass(String name,Class<?> elementClass) {

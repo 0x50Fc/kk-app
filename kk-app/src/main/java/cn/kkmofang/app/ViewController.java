@@ -1,9 +1,9 @@
 package cn.kkmofang.app;
 
-import android.provider.DocumentsContract;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -25,6 +25,11 @@ import cn.kkmofang.view.value.V;
 public class ViewController extends Controller {
 
     private ViewElement _element;
+    private String _viewPath;
+
+    public ViewElement element() {
+        return _element;
+    }
 
     @Override
     public void recycle() {
@@ -35,6 +40,25 @@ public class ViewController extends Controller {
         super.recycle();
     }
 
+    public android.view.View view() {
+        if(_element != null) {
+            return _element.view();
+        }
+        return null;
+    }
+
+    public void setAction(Object action) {
+        super.setAction(action);
+        _viewPath = V.stringValue(V.get(action,"view"),null);
+    }
+
+    public String viewPath() {
+        return _viewPath;
+    }
+
+    public void setViewPath(String view) {
+        _viewPath = view;
+    }
 
     public ViewElement run(DocumentView documentView) {
 
@@ -44,7 +68,15 @@ public class ViewController extends Controller {
 
         if(app != null && path != null) {
 
-            Element e = app.element(path + "_view.js",page);
+            String view = _viewPath;
+
+            if(view != null) {
+                view = view + "_view.js";
+            } else {
+                view = path + "_view.js";
+            }
+
+            Element e = app.element(view,page);
 
             if(e != null && e instanceof ViewElement) {
                 _element = (ViewElement) e;
