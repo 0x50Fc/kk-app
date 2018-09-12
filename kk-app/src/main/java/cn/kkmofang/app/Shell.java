@@ -128,6 +128,7 @@ public abstract class Shell {
     }
 
     public void setRootActivity(Activity rootActivity) {
+
         if(rootActivity == null) {
             _rootActivity = null;
         } else {
@@ -167,7 +168,7 @@ public abstract class Shell {
     public void finishPopActivitys(List<Activity> activities) {
         for(Activity v : activities) {
             if(v instanceof IWindowContainer) {
-
+                ((IWindowContainer) v).setRecycleWindowContainer();
             } else {
                 v.finish();
             }
@@ -462,6 +463,31 @@ public abstract class Shell {
                 Intent i = new Intent(_context, activityClass);
                 i.putExtra("appid", app.id());
                 i.putExtra("action", (Serializable) action);
+
+                {
+                    Intent from = container.getIntent();
+                    if(from.hasExtra("orientation")) {
+                        i.putExtra("orientation",from.getStringExtra("orientation"));
+                    }
+                    if(from.hasExtra("fullScreen")) {
+                        i.putExtra("fullScreen",from.getBooleanExtra("fullScreen",true));
+                    }
+                }
+
+                {
+                    Object v = V.get(action,"orientation");
+                    if(v != null) {
+                        i.putExtra("orientation",V.stringValue(v,""));
+                    }
+                }
+
+                {
+                    Object v = V.get(action, "fullScreen");
+                    if (v != null) {
+                        i.putExtra("fullScreen", V.booleanValue(v, true));
+                    }
+                }
+
                 container.startActivity(i);
             }
         }
@@ -518,11 +544,11 @@ public abstract class Shell {
 
         } else if("app".equals(type)) {
             if(url != null) {
-                open(url,ScriptContext.get(action,"query"));
+                open(url,ScriptContext.get(action,"query"),ScriptContext.booleanValue(ScriptContext.get(action,"checkUpdate"),false));
             }
         } else if(path != null){
 
-            Activity container = rootActivity();
+            Activity container = topActivity();
 
             if(container == null && pops != null) {
                 for(Activity v : pops) {

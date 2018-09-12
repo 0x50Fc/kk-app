@@ -29,6 +29,11 @@ public class BasePathResource implements IResource{
     }
 
     @Override
+    public String getAbsolutePath(String name) {
+        return _parent.getAbsolutePath(path(name));
+    }
+
+    @Override
     public String getString(String name) {
         return _parent.getString(path(name));
     }

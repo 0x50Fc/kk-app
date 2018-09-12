@@ -20,7 +20,6 @@ import java.util.TreeMap;
 
 public class GeoManager implements IGeoManager {
     public static final long LocationUpdateInterval = 60 * 60 * 1000;
-
     private LocationManager lm;
     private ILocationListener _locationListener;
     private Context _context;
@@ -127,7 +126,7 @@ public class GeoManager implements IGeoManager {
                             long lastFixTime = location.getTime();
                             if (System.currentTimeMillis() - lastFixTime >= timeLimit){
                                 lm.requestLocationUpdates(provider, timeLimit,
-                        0, _locationListeners.get(provider), Looper.myLooper());
+                                        0, _locationListeners.get(provider), Looper.myLooper());
                             }else {
                                 if (_locationListener != null){
                                     _locationListener.onLocation(location.getLatitude(), location.getLongitude());

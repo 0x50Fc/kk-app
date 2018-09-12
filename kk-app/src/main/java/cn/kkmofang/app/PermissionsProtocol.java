@@ -30,6 +30,7 @@ public class PermissionsProtocol {
 
     public enum PermissionCode{
         LOCATION("location", 1, "android.permission.ACCESS_FINE_LOCATION", "android.permission.ACCESS_COARSE_LOCATION"),
+        CAMERA("camera", 2, "android.permission.CAMERA"),
         NONE("null", -1);
 
         PermissionCode(String name, int code, String... permissions) {

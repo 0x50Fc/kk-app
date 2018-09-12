@@ -139,7 +139,7 @@ public class JSHttp implements IScriptObject{
                     @Override
                     public void on(Object data, Exception error, Object weakObject) {
                         if(weakObject != null) {
-                            cn.kkmofang.duktape.Context ctx = fn_onload.context();
+                            cn.kkmofang.duktape.BasicContext ctx = fn_onload.context();
 
                             ScriptContext.pushContext(ctx);
 
@@ -174,7 +174,7 @@ public class JSHttp implements IScriptObject{
                     @Override
                     public void on(Exception error, Object weakObject) {
                         if(weakObject != null) {
-                            cn.kkmofang.duktape.Context ctx = fn_onfail.context();
+                            cn.kkmofang.duktape.BasicContext ctx = fn_onfail.context();
 
                             ScriptContext.pushContext(ctx);
 
@@ -209,7 +209,7 @@ public class JSHttp implements IScriptObject{
 
                         if(weakObject != null) {
 
-                            cn.kkmofang.duktape.Context ctx = fn_onresponse.context();
+                            cn.kkmofang.duktape.BasicContext ctx = fn_onresponse.context();
 
                             ScriptContext.pushContext(ctx);
 
@@ -242,7 +242,7 @@ public class JSHttp implements IScriptObject{
 
                         if(weakObject != null) {
 
-                            cn.kkmofang.duktape.Context ctx = fn_onprocess.context();
+                            cn.kkmofang.duktape.BasicContext ctx = fn_onprocess.context();
 
                             ScriptContext.pushContext(ctx);
 

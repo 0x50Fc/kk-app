@@ -187,7 +187,7 @@ public class JSObserver implements IScriptObject ,IRecycle {
                         public void onChanged(IObserver observer, String[] changedKeys, Object value, JSObserver weakObject) {
 
                             if(weakObject != null) {
-                                cn.kkmofang.duktape.Context ctx = fn.context();
+                                cn.kkmofang.duktape.BasicContext ctx = fn.context();
                                 if(ctx != null) {
                                     cn.kkmofang.duktape.Context.pushContext(ctx);
                                     ctx.pushHeapptr(fn.heapptr());

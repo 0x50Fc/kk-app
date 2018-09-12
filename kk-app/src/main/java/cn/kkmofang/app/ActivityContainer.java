@@ -3,20 +3,22 @@ package cn.kkmofang.app;
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.view.Window;
+import android.view.WindowManager;
+import java.io.Serializable;
+import java.lang.ref.WeakReference;
 import android.support.annotation.NonNull;
-
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.TreeMap;
-
 import cn.kkmofang.observer.IObserver;
 import cn.kkmofang.observer.Listener;
 import cn.kkmofang.observer.Observer;
 import cn.kkmofang.view.DocumentView;
 import cn.kkmofang.view.ViewElement;
-import cn.kkmofang.unity.R;
 
 import static cn.kkmofang.app.PermissionsProtocol.STATUS_CANCEL;
 import static cn.kkmofang.app.PermissionsProtocol.STATUS_OK;
@@ -25,22 +27,47 @@ import static cn.kkmofang.app.PermissionsProtocol.STATUS_OK;
  * Created by zhanghailong on 2018/4/8.
  */
 
-public class ActivityContainer extends Activity implements Container {
+public class ActivityContainer extends Activity implements Container , IWindowContainer {
 
 
-    private Controller _controller;
+    protected Controller _controller;
 
     protected DocumentView _documentView;
 
     protected void onCreateDocumentView() {
-        setContentView(R.layout.kk_document);
-        _documentView = (DocumentView) findViewById(R.id.kk_documentView);
+        setContentView(cn.kkmofang.unity.R.layout.kk_document);
+        _documentView = (DocumentView) findViewById(cn.kkmofang.unity.R.id.kk_documentView);
     }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+        {
+            String v = getIntent().getStringExtra("orientation");
+
+            if ("landscape".equals(v)) {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            } else {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            }
+        }
+
+
+        {
+            Boolean v = getIntent().getBooleanExtra("fullScreen",getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
+            if(v) {
+                Window window = getWindow();
+                requestWindowFeature(Window.FEATURE_NO_TITLE);
+                int flag= WindowManager.LayoutParams.FLAG_FULLSCREEN;
+                window.addFlags(flag);
+                _fullScreenWindowContainer = true;
+            }
+
+        }
+
         onCreateDocumentView();
 
         Application app = null;
@@ -63,7 +90,6 @@ public class ActivityContainer extends Activity implements Container {
     @Override
     protected void onStart() {
         super.onStart();
-
 
         if(_documentView != null) {
             ViewElement element = _documentView.element();
@@ -98,8 +124,8 @@ public class ActivityContainer extends Activity implements Container {
         if(_documentView != null) {
             ViewElement element = _documentView.element();
             if(element != null) {
-                element.recycleView();
                 element.onDestroy(this);
+                element.recycle();
             }
         }
 
@@ -127,6 +153,14 @@ public class ActivityContainer extends Activity implements Container {
 
     }
 
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        if(_documentView != null) {
+            _documentView.setNeedsLayout(false);
+        }
+    }
+
     @Override
     public boolean isOpened() {
         return _controller != null;
@@ -147,17 +181,6 @@ public class ActivityContainer extends Activity implements Container {
 
     protected void onRun(Controller controller) {
 
-        {
-            Object v = controller.page().get(new String[]{"page", "orientation"});
-
-            if (v != null && v instanceof String) {
-                if ("landscape".equals(v)) {
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                } else {
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                }
-            }
-        }
 
     }
 
@@ -251,7 +274,7 @@ public class ActivityContainer extends Activity implements Container {
                 public void onChanged(IObserver observer, String[] changedKeys, Object value, ActivityContainer weakObject) {
 
                     if(weakObject != null && value != null) {
-                        weakObject.finish();
+                        weakObject.setRecycleWindowContainer();
                     }
                 }
             },this, Observer.PRIORITY_NORMAL,false);
@@ -280,6 +303,38 @@ public class ActivityContainer extends Activity implements Container {
         }
     }
 
+
+    private boolean _recycleWindowContainer = false;
+    private int _obtainWindowCount = 0;
+
+    @Override
+    public void obtainWindowContainer() {
+        _obtainWindowCount ++;
+    }
+
+    @Override
+    public void recycleWindowContainer() {
+        --_obtainWindowCount;
+        if(_recycleWindowContainer && _obtainWindowCount == 0) {
+            finish();
+        }
+    }
+
+    @Override
+    public void setRecycleWindowContainer() {
+        _recycleWindowContainer = true;
+        if(_obtainWindowCount == 0) {
+            finish();
+        }
+    }
+
+    private boolean _fullScreenWindowContainer = false;
+
+    @Override
+    public boolean isFullScreenWindowContainer() {
+        return _fullScreenWindowContainer;
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -298,4 +353,5 @@ public class ActivityContainer extends Activity implements Container {
             }
         }
     }
+
 }

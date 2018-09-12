@@ -2,10 +2,8 @@ package cn.kkmofang.app;
 
 import android.graphics.drawable.Drawable;
 
-import java.io.File;
-
-import cn.kkmofang.http.IHttpTask;
 import cn.kkmofang.image.ImageStyle;
+import cn.kkmofang.view.AbstractViewContext;
 import cn.kkmofang.view.AudioElement;
 import cn.kkmofang.view.AudioTask;
 import cn.kkmofang.view.IViewContext;
@@ -16,19 +14,17 @@ import cn.kkmofang.view.ImageTask;
  * Created by zhanghailong on 2018/4/8.
  */
 
-public abstract class ViewContext implements IViewContext {
+public abstract class ViewContext extends AbstractViewContext implements IViewContext {
 
-    protected final android.content.Context _context;
     protected final IResource _resource;
 
     public ViewContext(android.content.Context context,IResource resource) {
-        _context = context;
+        super(context);
         _resource = resource;
     }
 
-    @Override
-    public android.content.Context getContext() {
-        return _context;
+    public String getAbsolutePath(String path) {
+        return _resource.getAbsolutePath(path);
     }
 
     abstract public ImageTask getImage(String url, ImageStyle style, ImageCallback callback);

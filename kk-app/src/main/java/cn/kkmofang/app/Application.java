@@ -17,6 +17,7 @@ import cn.kkmofang.observer.Observer;
 import cn.kkmofang.script.IScriptFunction;
 import cn.kkmofang.script.ScriptContext;
 import cn.kkmofang.view.Element;
+import cn.kkmofang.view.IViewApplication;
 import cn.kkmofang.view.IViewContext;
 import cn.kkmofang.view.ViewContext;
 import cn.kkmofang.unity.R;
@@ -25,7 +26,7 @@ import cn.kkmofang.unity.R;
  * Created by zhanghailong on 2018/3/12.
  */
 
-public class Application extends RecycleContainer {
+public class Application extends RecycleContainer implements IViewApplication {
 
     public final static double Kernel = 1.0;
     private static long _autoId = 0;
@@ -51,6 +52,7 @@ public class Application extends RecycleContainer {
         _resource = resource;
         _context = context;
         _viewContext = viewContext;
+        _viewContext.setViewApplication(this);
         _id = ++ _autoId;
 
         _applications.put(_id,new WeakReference<>(this));
@@ -157,6 +159,35 @@ public class Application extends RecycleContainer {
         _jsContext.push("View");
         _jsContext.pushFunction(View.Func);
         _jsContext.putProp(-3);
+
+        _jsContext.push("app");
+        _jsContext.pushObject(_jsObserver);
+        _jsContext.putProp(-3);
+
+        _jsContext.push("setTimeout");
+        _jsContext.pushFunction(_caller.SetTimeoutFunc);
+        _jsContext.putProp(-3);
+
+        _jsContext.push("clearTimeout");
+        _jsContext.pushFunction(_caller.ClearTimeoutFunc);
+        _jsContext.putProp(-3);
+
+        _jsContext.push("setInterval");
+        _jsContext.pushFunction(_caller.SetIntervalFunc);
+        _jsContext.putProp(-3);
+
+        _jsContext.push("clearInterval");
+        _jsContext.pushFunction(_caller.ClearIntervalFunc);
+        _jsContext.putProp(-3);
+
+        _jsContext.push("WebSocket");
+        _jsContext.pushObject(_jsWebSocket);
+        _jsContext.putProp(-3);
+
+        _jsContext.push("http");
+        _jsContext.pushObject(jsHttp());
+        _jsContext.putProp(-3);
+
 
         _jsContext.pop();
 

@@ -1,6 +1,7 @@
 package cn.kkmofang.app;
 
 import android.os.Handler;
+import android.renderscript.Script;
 import android.util.Log;
 
 import java.io.File;
@@ -13,6 +14,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import cn.kkmofang.http.HttpOptions;
+import cn.kkmofang.script.ScriptContext;
 import cn.kkmofang.view.value.V;
 
 /**
@@ -20,6 +22,9 @@ import cn.kkmofang.view.value.V;
  */
 
 public class AppLoading {
+
+    private final static String kSkipLocalFiles = "_skipLocalFiles";
+
 
     public final static Charset UTF8 = Charset.forName("UTF-8");
 
@@ -111,8 +116,11 @@ public class AppLoading {
             }
         }
 
+        boolean skipLocalFiles = V.booleanValue(V.get(appInfo,kSkipLocalFiles),false);
+
         if(V.get(appInfo,"md5") != null
-                && version.equals(V.stringValue(V.get(appInfo,"version"),null))) {
+                && version.equals(V.stringValue(V.get(appInfo,"version"),null))
+                && !skipLocalFiles) {
 
             String ver1 = V.stringValue(V.get(appInfo,"ver"),null);
             String ver2 = V.stringValue(V.get(data,"ver"),null);
@@ -155,11 +163,11 @@ public class AppLoading {
         File basePath = ((new File(new File(_path),version)));
         File tPath = new File(_path + "_" + version + "_" + ver);
 
-        itemLoad(0,(List<Object>) items,data,vers,basePath,tPath);
+        itemLoad(0,(List<Object>) items,data,vers,basePath,tPath,skipLocalFiles);
 
     }
 
-    protected void itemLoad(final int index, final List<Object> items, final Object appInfo, final Map<String,String> vers, final File basePath, final File tPath) {
+    protected void itemLoad(final int index, final List<Object> items, final Object appInfo, final Map<String,String> vers, final File basePath, final File tPath, final boolean skipLocalFiles) {
 
         onProgress(index,items != null ? items.size() : 0);
 
@@ -184,7 +192,7 @@ public class AppLoading {
                         public void run() {
                             AppLoading v = loading.get();
                             if(v != null) {
-                                v.itemLoad(index + 1, items,appInfo,vers,basePath,tPath);
+                                v.itemLoad(index + 1, items,appInfo,vers,basePath,tPath,skipLocalFiles);
                             }
                         }
                     });
@@ -202,7 +210,7 @@ public class AppLoading {
 
                 if(vers == null || ( vers.containsKey(path) && vers.get(path).equals(ver))) {
 
-                    if(topath.exists()) {
+                    if(!skipLocalFiles && topath.exists()) {
                         FileResource.mkdir(tpath);
                         FileResource.copy(topath,tpath);
                         _handler.post(new Runnable() {
@@ -210,7 +218,7 @@ public class AppLoading {
                             public void run() {
                                 AppLoading v = loading.get();
                                 if(v != null) {
-                                    v.itemLoad(index + 1, items,appInfo,vers,basePath,tPath);
+                                    v.itemLoad(index + 1, items,appInfo,vers,basePath,tPath,skipLocalFiles);
                                 }
                             }
                         });
@@ -230,7 +238,7 @@ public class AppLoading {
                     public void run() {
                         AppLoading v = loading.get();
                         if(v != null) {
-                            v.itemLoad(index + 1, items,appInfo,vers,basePath,tPath);
+                            v.itemLoad(index + 1, items,appInfo,vers,basePath,tPath,skipLocalFiles);
                         }
                     }
                 });
@@ -266,11 +274,11 @@ public class AppLoading {
             options.onload = new HttpOptions.OnLoad() {
                 @Override
                 public void on(Object data, Exception error, Object weakObject) {
-                    if(error != null) {
+                    if(error != null || data == null) {
                         FileResource.deleteDir(tPath);
                         AppLoading v = loading.get();
                         if(v != null) {
-                            v.onError(error);
+                            v.onError(error == null ? new Exception("文件下载错误") : error);
                         }
                     } else {
                         FileResource.mkdir(f_tpath);
@@ -279,7 +287,7 @@ public class AppLoading {
                         f.renameTo(f_tpath);
                         AppLoading v = loading.get();
                         if(v != null) {
-                            v.itemLoad(index + 1, items,appInfo,vers,basePath,tPath);
+                            v.itemLoad(index + 1, items,appInfo,vers,basePath,tPath,skipLocalFiles);
                         }
                     }
                 }
@@ -299,6 +307,7 @@ public class AppLoading {
 
     protected void verify(final List<Object> items, final Object appInfo, final File basePath, final File tPath) {
 
+        final String path = _path;
         final String md5 = V.stringValue(V.get(appInfo,"md5"),null);
 
         final WeakReference<AppLoading> loading = new WeakReference<AppLoading>(this);
@@ -390,6 +399,14 @@ public class AppLoading {
                         });
 
                     } else {
+
+                        Object appInfo = _http.decodeJSON(FileResource.getString(new File(path,"app.json")));
+
+                        if(appInfo != null) {
+                            ScriptContext.set(appInfo,kSkipLocalFiles,true);
+                            String data = v._http.encodeJSON(appInfo);
+                            FileResource.setContent(new File(path,"app.json"),data);
+                        }
 
                         FileResource.deleteDir(tPath);
 

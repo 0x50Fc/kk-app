@@ -50,6 +50,8 @@ public class View {
         _elements.put("anim:transform",AnimationElement.Transform.class);
         _elements.put("anim:opacity",AnimationElement.Opacity.class);
         _elements.put("audio",AudioElement.class);
+        _elements.put("webview",WebViewElement.class);
+        _elements.put("page", PageElement.class);
     }
 
     public static void setElementClass(String name,Class<?> elementClass) {
@@ -318,15 +320,19 @@ public class View {
     }
 
     public static void runFunc(Heapptr func,Element e,IObserver data) {
-        cn.kkmofang.duktape.Context ctx = func.context();
-        if(ctx != null) {
+        cn.kkmofang.duktape.BasicContext ctx = func.context();
+        if(ctx != null && func.heapptr() !=0 ) {
+            ScriptContext.pushContext(ctx);
             ctx.pushHeapptr(func.heapptr());
-            ctx.pushObject(e);
-            ctx.pushObject(data);
-            if(ctx.pcall(2) != cn.kkmofang.duktape.Context.DUK_EXEC_SUCCESS) {
-                Log.d(Context.TAG,ctx.getErrorString(-1));
+            if(ctx.isFunction(-1)) {
+                ctx.pushObject(e);
+                ctx.pushObject(data);
+                if (ctx.pcall(2) != cn.kkmofang.duktape.BasicContext.DUK_EXEC_SUCCESS) {
+                    Log.d(Context.TAG, ctx.getErrorString(-1));
+                }
             }
             ctx.pop();
+            ScriptContext.popContext();
         }
     }
 
@@ -351,7 +357,7 @@ public class View {
         @Override
         public int call() {
 
-            cn.kkmofang.duktape.Context ctx = (cn.kkmofang.duktape.Context) ScriptContext.currentContext();
+            cn.kkmofang.duktape.BasicContext ctx = (cn.kkmofang.duktape.BasicContext) ScriptContext.currentContext();
 
             int top = ctx.getTop();
 
