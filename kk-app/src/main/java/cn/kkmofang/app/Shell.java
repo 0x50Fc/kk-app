@@ -27,6 +27,7 @@ import cn.kkmofang.script.ScriptContext;
 import cn.kkmofang.view.IViewContext;
 import cn.kkmofang.view.value.Pixel;
 import cn.kkmofang.view.value.V;
+import cn.kkmofang.unity.R;
 
 /**
  * Created by zhanghailong on 2018/4/8.
@@ -489,7 +490,17 @@ public abstract class Shell {
                 }
 
                 container.startActivity(i);
+                windowAnimation(container, action);
+
             }
+        }
+    }
+
+    protected void windowAnimation(Activity container, Object action){
+        if (!V.booleanValue(V.get(action, "animated"), true)){
+            container.overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        }else {
+            container.overridePendingTransition(R.anim.enter_right, R.anim.exit_left);
         }
     }
 

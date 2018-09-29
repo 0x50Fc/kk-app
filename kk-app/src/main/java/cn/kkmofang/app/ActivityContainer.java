@@ -4,14 +4,15 @@ import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import android.support.annotation.NonNull;
-import java.io.Serializable;
-import java.lang.ref.WeakReference;
+
 import java.util.Map;
 import java.util.TreeMap;
 import cn.kkmofang.observer.IObserver;
@@ -19,6 +20,8 @@ import cn.kkmofang.observer.Listener;
 import cn.kkmofang.observer.Observer;
 import cn.kkmofang.view.DocumentView;
 import cn.kkmofang.view.ViewElement;
+import cn.kkmofang.view.value.V;
+import cn.kkmofang.unity.R;
 
 import static cn.kkmofang.app.PermissionsProtocol.STATUS_CANCEL;
 import static cn.kkmofang.app.PermissionsProtocol.STATUS_OK;
@@ -64,6 +67,17 @@ public class ActivityContainer extends Activity implements Container , IWindowCo
                 int flag= WindowManager.LayoutParams.FLAG_FULLSCREEN;
                 window.addFlags(flag);
                 _fullScreenWindowContainer = true;
+                hideNavr(window);
+                final WeakReference<Window> wr = new WeakReference<>(window);
+                window.getDecorView().setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+                    @Override
+                    public void onSystemUiVisibilityChange(int visibility) {
+                        Window w = wr.get();
+                        if (w != null){
+                            hideNavr(w);
+                        }
+                    }
+                });
             }
 
         }
@@ -84,7 +98,6 @@ public class ActivityContainer extends Activity implements Container , IWindowCo
         if(app != null && action != null && _documentView != null) {
             open(app,action);
         }
-
     }
 
     @Override
@@ -353,5 +366,38 @@ public class ActivityContainer extends Activity implements Container , IWindowCo
             }
         }
     }
+
+    @Override
+    public void finish() {
+        super.finish();
+        windowAnimation();
+    }
+
+    public void windowAnimation(){
+        if (_action != null){
+            boolean animated = V.booleanValue(V.get(_action, "animated"), true);
+            if (!animated) {
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                return;
+            }
+            overridePendingTransition(R.anim.enter_left, R.anim.exit_right);
+        }
+    }
+
+
+    protected void hideNavr(Window w){
+        int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                View.SYSTEM_UI_FLAG_FULLSCREEN |
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+        if (Build.VERSION.SDK_INT >= 19){
+            uiOptions |= 0x00001000;
+        } else {
+            uiOptions |= View.SYSTEM_UI_FLAG_LOW_PROFILE;
+        }
+        w.getDecorView().setSystemUiVisibility(uiOptions);
+    }
+
 
 }

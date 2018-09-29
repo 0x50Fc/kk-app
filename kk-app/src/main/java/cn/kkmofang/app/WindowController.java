@@ -3,17 +3,23 @@ package cn.kkmofang.app;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.*;
+import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
@@ -61,10 +67,39 @@ public class WindowController extends Dialog {
             _container.obtainWindowContainer();
             if(_container.isFullScreenWindowContainer()) {
                 _fullScreen = true;
-                Window window = getWindow();
+                final Window window = getWindow();
                 requestWindowFeature(Window.FEATURE_NO_TITLE);
                 int flag= WindowManager.LayoutParams.FLAG_FULLSCREEN;
-                window.addFlags(flag);
+                if (window != null){
+                    window.addFlags(flag);
+                    window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+                    final WeakReference<Window> wr = new WeakReference<>(window);
+                    window.getDecorView().setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+                        @Override
+                        public void onSystemUiVisibilityChange(int visibility) {
+                            int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                                    //布局位于状态栏下方
+                                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                                    //全屏
+                                    View.SYSTEM_UI_FLAG_FULLSCREEN |
+                                    //隐藏导航栏
+                                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+                            if (Build.VERSION.SDK_INT >= 19) {
+                                uiOptions |= 0x00001000;
+                            } else {
+                                uiOptions |= View.SYSTEM_UI_FLAG_LOW_PROFILE;
+                            }
+                            Window w = wr.get();
+                            if (w != null){
+                                w.getDecorView().setSystemUiVisibility(uiOptions);
+                            }
+
+
+                        }
+                    });
+                }
+
             }
         }
 
@@ -218,4 +253,6 @@ public class WindowController extends Dialog {
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         return interceptBack(keyCode) || super.onKeyUp(keyCode, event);
     }
+
+
 }
