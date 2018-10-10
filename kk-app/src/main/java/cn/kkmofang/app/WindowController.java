@@ -77,25 +77,10 @@ public class WindowController extends Dialog {
                     window.getDecorView().setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
                         @Override
                         public void onSystemUiVisibilityChange(int visibility) {
-                            int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-                                    //布局位于状态栏下方
-                                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-                                    //全屏
-                                    View.SYSTEM_UI_FLAG_FULLSCREEN |
-                                    //隐藏导航栏
-                                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-                            if (Build.VERSION.SDK_INT >= 19) {
-                                uiOptions |= 0x00001000;
-                            } else {
-                                uiOptions |= View.SYSTEM_UI_FLAG_LOW_PROFILE;
-                            }
                             Window w = wr.get();
                             if (w != null){
-                                w.getDecorView().setSystemUiVisibility(uiOptions);
+                                hideNavr(w);
                             }
-
-
                         }
                     });
                 }
@@ -252,6 +237,23 @@ public class WindowController extends Dialog {
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         return interceptBack(keyCode) || super.onKeyUp(keyCode, event);
+    }
+
+    public void hideNavr(Window w){
+        int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                //布局位于状态栏下方
+                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                //全屏
+                View.SYSTEM_UI_FLAG_FULLSCREEN |
+                //隐藏导航栏
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+        if (Build.VERSION.SDK_INT >= 19) {
+            uiOptions |= 0x00001000;
+        } else {
+            uiOptions |= View.SYSTEM_UI_FLAG_LOW_PROFILE;
+        }
+        w.getDecorView().setSystemUiVisibility(uiOptions);
     }
 
 
