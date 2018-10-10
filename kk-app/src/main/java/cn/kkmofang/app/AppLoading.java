@@ -56,6 +56,9 @@ public class AppLoading {
     private final String _key;
     private final Handler _handler;
     private boolean _canceled = false;
+    private Object _appInfo;
+    private int _count;
+    private int _totalCount;
 
     public OnLoad onload;
     public OnProgress onprogress;
@@ -86,12 +89,16 @@ public class AppLoading {
     }
 
     protected void onProgress(int count,int totalCount) {
+        _count = count;
+        _totalCount = totalCount;
         if(onprogress != null) {
             onprogress.onProgress(_url,_path,count,totalCount);
         }
     }
 
     protected void onAppInfo(Object data) {
+
+        _appInfo = data;
 
         if(onappinfo != null) {
             onappinfo.onAppInfo(_url,data);
@@ -482,7 +489,27 @@ public class AppLoading {
         return _canceled;
     }
 
-    public void setCanceled(boolean v) {
-        _canceled = v;
+    public void cancel() {
+        _canceled = true;
+        onload = null;
+        onprogress = null;
+        onerror = null;
+        onappinfo = null;
+    }
+
+    public void restart() {
+        _canceled = false;
+    }
+
+    public int count() {
+        return _count;
+    }
+
+    public int totalCount() {
+        return _totalCount;
+    }
+
+    public Object appInfo() {
+        return _appInfo;
     }
 }

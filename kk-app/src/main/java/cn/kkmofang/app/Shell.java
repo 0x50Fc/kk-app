@@ -83,7 +83,7 @@ public abstract class Shell {
         return _context;
     }
 
-    private WeakReference<Application> _rootApplication = null;
+    private Application _rootApplication = null;
 
     private List<WeakReference<Activity>> _activitys = new LinkedList<>();
 
@@ -100,11 +100,9 @@ public abstract class Shell {
         }
         return null;
     }
+
     public Application rootApplication() {
-        if(_rootApplication != null) {
-            return _rootApplication.get();
-        }
-        return null;
+        return _rootApplication;
     }
 
     public Activity rootActivity() {
@@ -232,45 +230,46 @@ public abstract class Shell {
         final String key = HttpOptions.cacheKey(url);
         final Map<String,AppLoading> loadings = _loadings;
         AppLoading loading = null;
-
-        if(loadings.containsKey(key)) {
-            loading = loadings.get(key);
-            loading.setCanceled(false);
-            return loading;
-        }
-
+        boolean isRestart = false;
 
         final File path = new File(_context.getDir("kk",android.content.Context.MODE_PRIVATE),key);
         final WeakReference<Shell> shell = new WeakReference<Shell>(this);
 
-        loading = new AppLoading(url, path.getAbsolutePath(), new AppLoading.Http() {
+        if(loadings.containsKey(key)) {
+            loading = loadings.get(key);
+            isRestart = true;
+        } else {
+            loading = new AppLoading(url, path.getAbsolutePath(), new AppLoading.Http() {
 
-            @Override
-            public void send(HttpOptions options) {
-                Shell v = shell.get();
-                if(v != null) {
-                    v._http.send(options,v);
+                @Override
+                public void send(HttpOptions options) {
+                    Shell v = shell.get();
+                    if(v != null) {
+                        v._http.send(options,v);
+                    }
                 }
-            }
 
-            @Override
-            public String encodeJSON(Object object) {
-                Shell v = shell.get();
-                if(v != null) {
-                    return  v._http.encodeJSON(object);
+                @Override
+                public String encodeJSON(Object object) {
+                    Shell v = shell.get();
+                    if(v != null) {
+                        return  v._http.encodeJSON(object);
+                    }
+                    return "";
                 }
-                return "";
-            }
 
-            @Override
-            public Object decodeJSON(String text) {
-                Shell v = shell.get();
-                if(v != null) {
-                    return  v._http.decodeJSON(text);
+                @Override
+                public Object decodeJSON(String text) {
+                    Shell v = shell.get();
+                    if(v != null) {
+                        return  v._http.decodeJSON(text);
+                    }
+                    return null;
                 }
-                return null;
-            }
-        });
+            });
+            setLoading(key,loading);
+        }
+
 
         loading.query = this.query();
 
@@ -324,11 +323,19 @@ public abstract class Shell {
 
         if(onload != null) {
             willLoading(url);
+            if(loading.appInfo() != null) {
+                willLoadingAppInfo(url,loading.appInfo());
+            }
+            if(loading.totalCount() > 0) {
+                didProgress(url,path,loading.count(),loading.totalCount());
+            }
         }
 
-        setLoading(key,loading);
-
-        loading.start();
+        if(isRestart) {
+            loading.restart();
+        } else {
+            loading.start();
+        }
 
         return loading;
 
@@ -643,8 +650,8 @@ public abstract class Shell {
 
         app.setShell(this);
 
-        if(_rootApplication == null || _rootApplication.get() == null) {
-            _rootApplication = new WeakReference<>(app);
+        if(_rootApplication == null) {
+            _rootApplication = app;
             app.observer().on(new String[]{"app","cancel"}, new Listener<Application>() {
                 @Override
                 public void onChanged(IObserver observer, String[] changedKeys, Object value, Application weakObject) {
@@ -655,7 +662,7 @@ public abstract class Shell {
                             if(url != null) {
                                 AppLoading loading = vv.isLoading(url);
                                 if(loading != null) {
-                                    loading.setCanceled(true);
+                                    loading.cancel();
                                 }
                             }
                         }
