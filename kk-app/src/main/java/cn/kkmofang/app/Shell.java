@@ -511,11 +511,11 @@ public abstract class Shell {
         }
     }
 
-    protected void openURL(Application app, Object action,String url) {
+    protected void openURL(Activity context, Application app, Object action,String url) {
 
     }
 
-    protected void openScheme(Application app, Object action,String scheme) {
+    protected void openScheme(Activity context, Application app, Object action,String scheme) {
 
     }
 
@@ -541,18 +541,17 @@ public abstract class Shell {
         String scheme = ScriptContext.stringValue(ScriptContext.get(action,"scheme"),null);
         String path = ScriptContext.stringValue(ScriptContext.get(action,"path"),null);
 
-        if("window".equals(type)) {
-
-            Activity container = topActivity();
-
-            if(container == null && pops != null) {
-                for(Activity v : pops) {
-                    if(v instanceof IWindowContainer) {
-                        container = v;
-                        break;
-                    }
+        Activity container = topActivity();
+        if (container == null && pops != null){
+            for (Activity v : pops) {
+                if (v instanceof IWindowContainer){
+                    container = v;
+                    break;
                 }
             }
+        }
+
+        if("window".equals(type)) {
 
             if(container != null) {
                 openWindow(container,app, action);
@@ -566,15 +565,6 @@ public abstract class Shell {
             }
         } else if(path != null){
 
-            Activity container = topActivity();
-
-            if(container == null && pops != null) {
-                for(Activity v : pops) {
-                    container = v;
-                    break;
-                }
-            }
-
             if(container != null) {
                 openActivity(container,app, action);
             } else {
@@ -583,12 +573,12 @@ public abstract class Shell {
 
         } else if(scheme != null) {
             if(scheme.startsWith("http://") || scheme.startsWith("https://")) {
-                openURL(app,action,scheme);
+                openURL(container, app, action, scheme);
             } else {
-                openScheme(app, action, scheme);
+                openScheme(container, app, action, scheme);
             }
         } else if(url != null) {
-            openURL(app,action,url);
+            openURL(container, app, action, url);
         }
 
         if(pops != null) {
