@@ -1,6 +1,8 @@
 package cn.kkmofang.app;
 
 
+import android.os.Handler;
+
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Map;
@@ -138,12 +140,15 @@ public class ViewController extends Controller {
                 public void onEvent(Event event) {
                     final DocumentView v = view.get();
                     if(v != null) {
-                        v.getHandler().post(new Runnable() {
-                            @Override
-                            public void run() {
-                                v.setNeedsLayout(true);
-                            }
-                        });
+                        Handler handler = v.getHandler();
+                        if (handler != null){
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    v.setNeedsLayout(true);
+                                }
+                            });
+                        }
                     }
                 }
             });
