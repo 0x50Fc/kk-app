@@ -292,6 +292,19 @@ public class ActivityContainer extends Activity implements Container , IWindowCo
                 }
             },this, Observer.PRIORITY_NORMAL,false);
 
+            final WeakReference<IObserver> w = new WeakReference<>(_controller.page());
+            _documentView.setOnPageSizeChangeListener(new DocumentView.PageSizeChangeListener() {
+                @Override
+                public void onChange(int l, int t, int r, int b) {
+                    IObserver o = w.get();
+                    if (o != null){
+                        Map<String, Object> data = new TreeMap<>();
+                        data.put("width", r - l);
+                        data.put("height", b - t);
+                        o.set(new String[]{"page", "resize"}, data);
+                    }
+                }
+            });
 
             onCreatePage(_controller.page());
 
